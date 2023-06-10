@@ -164,7 +164,7 @@ function draw()
     sortButton.text = sortMode;
     sortButton.render();
     fill(255,0,0);
-    instant_text("JSDex", 29, 10, 5);
+    instant_text("JSDex\n(Data/Sprites sourced from PokeAPI)", 29, 10, 5);
     if(clicked){clicked = false;}
 }
 
