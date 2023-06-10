@@ -12,6 +12,7 @@ class PokeIcon
 {
     constructor(id)
     {
+        running++;
         this.ID = id
         this.current_form = 0
         this.img = [loadImage("data/sprites/"+id+"/front_default.png")]
@@ -69,6 +70,7 @@ class PokeIcon
         this.abilities = this.abilities.concat(this.data.abilities);
 
         this.hasData = true;
+        running--;
     }
 
     render(x, y, size)

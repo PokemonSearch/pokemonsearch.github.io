@@ -1,6 +1,7 @@
 
 //const { Renderer } = require("../../../../.vscode/extensions/samplavigne.p5-vscode-1.2.12/p5types");
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+var verion = "0.1"
 var w = window.innerWidth;
 var h = window.innerHeight;
 const MAX_ID = 1010; //[number of pokemon]
@@ -22,6 +23,7 @@ var cachedSearch = "";
 var sortMode = "OR";
 var selectedElement = null;
 var chosenIcons = [];
+var running = 0;
 function setup()
 {
     var barReduction = w/4
@@ -98,7 +100,10 @@ async function init()
     for(var i = 1; i < MAX_ID + 1; i++)
     {
         icons.push(new PokeIcon(i))
-        await delay(1)
+        while(running > 2)
+        {
+            await delay(1)
+        }
     }
     analysis();
 }
@@ -164,7 +169,7 @@ function draw()
     sortButton.text = sortMode;
     sortButton.render();
     fill(255,0,0);
-    instant_text("JSDex\n(Data/Sprites sourced from PokeAPI)", 29, 10, 5);
+    instant_text("JSDex ( v" + verion + " )\n(Data/Sprites sourced from PokeAPI)", 29, 10, 5);
     if(clicked){clicked = false;}
 }
 
