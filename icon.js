@@ -70,6 +70,7 @@ class PokeIcon
         this.abilities = this.abilities.concat(this.data.abilities);
 
         this.hasData = true;
+        finishedLoading++;
         running--;
     }
 

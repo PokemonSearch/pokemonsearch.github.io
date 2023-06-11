@@ -154,35 +154,55 @@ function checkCR(icon, comp, value)
 var operators = 
 {
     "name":checkName,
+
     "type":checkType,
+
     "color":checkCol,
     "colour":checkCol,
+
     "weight":checkWeight,
+
     "hp":checkHP,
+
     "atk":checkAtk,
+
     "def":checkDef,
+
     "spa":checkSpA,
+
     "spd":checkSpD,
+
     "spe":checkSpe,
+    "speed":checkSpe,
+
     "bst":checkBST,
+    "basestattotal":checkBST,
+    "base_stat_total":checkBST,
+
     "capture":checkCR,
+    "capturerate":checkCR,
+    "capture_rate":checkCR,
+
     "forms":checkForms,
 }
 
 function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */iconList)
 {
     arg = arg.toLowerCase();
-    var keys = Object.keys(operators);
+    var keys = Object.keys(operators).sort(function(a, b){return b.length - a.length;});
     var hasOperator = false;
     var operator = "";
     var comparator = ""
     var value = "";
     var possibleComps = ["=",">","<"]
+    console.log(keys);
     for(var i = 0; i < keys.length; i++)
     {
         var k = keys[i];
         if(arg.includes(k))
         {
+            if(operator != "" && operators[k] == operators[operator]){continue;} //skip if it is an equivalent operator
+            console.log(k + " vs. " + operator);
             if(hasOperator){return [];} //check if there are multiple operators
             if(!hasOperator){hasOperator = true};  
             if(arg[arg.indexOf(k)] == arg.length - 1){return [];} //check if operator is at end
