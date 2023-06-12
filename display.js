@@ -226,7 +226,7 @@ function draw()
         textSize(29*0.7)
         instant_text("Welcome to CheeseMan's JSDex Data Base!", 29*0.7, w/2, overlayY + textAscent()/2 - 15, color(255), true);
         textLeading(27);
-        instant_text(helpText, 23*0.7, oX, oY + 5, color(255), false);
+        instant_text(helpText, 23*0.7, oX, oY - 5, color(255), false);
         textLeading(20);
     }
     helpButton.render();
