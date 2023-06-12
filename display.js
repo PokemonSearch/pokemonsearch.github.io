@@ -1,7 +1,7 @@
 
 //const { Renderer } = require("../../../../.vscode/extensions/samplavigne.p5-vscode-1.2.12/p5types");
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-var version = "0.2"
+var version = "0.3"
 var w = window.innerWidth;
 var h = window.innerHeight;
 const MAX_ID = 1010; //[number of pokemon]
@@ -20,27 +20,48 @@ var pokemonDisplay;
 var searchBar;
 var sortButton;
 var loadButton;
+var helpButton;
 var cachedSearch = "";
 var sortMode = "OR";
 var loadMode = "SAFE";
 var selectedElement = null;
 var chosenIcons = [];
 var running = 0;
+var overlay = false;
 var finishedLoading = 0;
+var helpText = "";
 function setup()
 {
+    textLeading(20); //default is 20
     var barReduction = w/4
     searchBar = new TextBox(barReduction/2, 10, w - barReduction, 30);
     sortButton = new Button(barReduction/2 + searchBar.width + 20, 15, 100, 30, color(100, 100, 120), color(255, 255, 255), toggleMode);
+    helpButton = new Button(sortButton.pos.x + sortButton.width + 20, 15, 60, 30, color(100, 100, 120), color(255, 255, 255), swapOverlay);
+    helpButton.text = "?"
     loadButton = new Button(sortButton.pos.x + 20, 15, 100, 30, color(100, 100, 120), color(255, 255, 255), swapLoading);
     pokemonDisplay = new Panel(600);
     viewrange = [0, h];
-    font_pixeloid = loadFont("fonts/bw2.ttf")
+    font_pixeloid = loadFont("fonts/bw2 (t&i)(edited).ttf")
     canvas = createCanvas(w, h);
     canvas.position(0,0);
     canvas.style("display","block");
     textAlign(LEFT, TOP);
     init()
+
+    helpText = `This website was designed to be used as a tool to sort Pokemon by their various attributes. 
+You can also take a look at each one by clicking on it, and the menu can be closed by clicking on the same Pokemon icon. 
+Using the search bar, the list of Pokemon can be filtered. Each filter should contain no spaces and every filter should be seperated by a singular space. (i.e: "atk>70 hp<60 gen=5")
+The button at the side can switch from "OR" mode and "AND" mode. 
+In "OR" mode, Pokemon will be hidden if they do not fit ANY of the filters. 
+In "AND" mode, Pokemon will be hidden if they do not fit ALL of the filters.
+The list of available filters includes:
+`
+    keys = Object.keys(operators);
+    for(var o = 0; o < keys.length; o++)
+    {
+        if(o > 0 && operators[keys[o]] == operators[keys[o - 1]]){continue;}
+        helpText += '\n"' + keys[o] + '": ' + desc[operators[keys[o]].name]
+    }
 
 }
 
@@ -55,6 +76,11 @@ function swapLoading()
             loadMode = "SAFE";
             break;
     }
+}
+
+function swapOverlay()
+{
+    overlay = !overlay;
 }
 
 function analysis()
@@ -186,12 +212,32 @@ function draw()
     sortButton.text = sortMode;
     sortButton.render();
 
+
+    if(overlay)
+    {
+        background(0, 0, 0, 200)
+
+        fill(40, 40, 40)
+        var overlayX = w/16
+        var overlayY = h/8
+        rect(overlayX, overlayY, (w - 2*overlayX), (h - 2*overlayY), (w/20 + h/20)/2);
+        var oX = overlayX + (w/20 + h/20)/2;
+        var oY = overlayY + (w/20 + h/20)/2 - 25;
+        textSize(29*0.7)
+        instant_text("Welcome to CheeseMan's JSDex Data Base!", 29*0.7, w/2, overlayY + textAscent()/2 - 15, color(255), true);
+        textLeading(27);
+        instant_text(helpText, 23*0.7, oX, oY + 5, color(255), false);
+        textLeading(20);
+    }
+    helpButton.render();
+
+
     var loadingPercent = Math.round((finishedLoading/MAX_ID)*100);
     var loadText = ""
-    var baseHeader = "JSDex ( v" + version + " )\n(Data/Sprites sourced from PokeAPI)"
+    var baseHeader = "JSDex ( v" + version + " )\n\n(Data/Sprites sourced from PokeAPI)"
     if(loadingPercent < 100)
     {
-        loadText = " ( Loading: " + loadingPercent + "% )"
+        loadText = " (Loading: " + loadingPercent + "%)"
         loadButton.pos.x = textWidth(baseHeader + "( 100% )") - 30;
         loadButton.pos.y = 10 + textAscent()*2 + loadButton.height/4;
         loadButton.text = loadMode;
@@ -199,7 +245,7 @@ function draw()
     }
     var header = baseHeader + loadText;
     fill(255,0,0);
-    instant_text(header, 29, 10, 5);
+    instant_text(header, 29*0.7, 10, -10);
 
     if(clicked){clicked = false;}
 }

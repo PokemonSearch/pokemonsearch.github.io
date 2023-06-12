@@ -80,7 +80,7 @@ class PokeIcon
         var overX = (mouseX >= x && mouseX <= x + size)
         var overY = (mouseY >= y && mouseY <= y + size)
         var over = overX && overY;
-        if(over && mouseY >= viewrange[0] && mouseY <= viewrange[1])
+        if(over && mouseY >= viewrange[0] && mouseY <= viewrange[1] && !overlay)
         {
             scale = 1.3;
             if(clicked)
@@ -96,7 +96,7 @@ class PokeIcon
             }
             if(this.hasData)
             {   
-                buffer_text(this.name, 20, x + size/2, y + size/2 + 20, color(255, 255, 255, 255*((this.raw_scale - 1)/(scale - 1))), true);
+                buffer_text(this.name, 20*0.7, x + size/2, y + size/2 + 20, color(255, 255, 255, 255*((this.raw_scale - 1)/(scale - 1))), true);
             }
         }
         this.raw_scale += 0.01*deltaTime*(scale - this.raw_scale);

@@ -9,6 +9,46 @@ function setMode(value)
     if(value == "AND"){sortMode = "AND";}
 }
 
+function getGen(ID)
+{
+    if(ID < 152)
+    {
+        return 1;
+    }
+    else if (ID < 252)
+    {
+        return 2;
+    }
+    else if(ID < 387)
+    {
+        return 3;
+    }
+    else if(ID < 494)
+    {
+        return 4;
+    }
+    else if(ID < 650)
+    {
+        return 5;
+    }
+    else if(ID < 722)
+    {
+        return 6;
+    }
+    else if(ID < 810)
+    {
+        return 7;
+    }
+    else if(ID < 906)
+    {
+        return 8;
+    }
+    else
+    {
+        return 9;
+    }
+}
+
 function toggleMode()
 {
     switch(sortMode)
@@ -33,6 +73,36 @@ function checkWeight(icon, comp, value)
             return icon.data.weight > value;
         case "<":
             return icon.data.weight < value;
+    }
+}
+
+function checkGeneration(icon, comp, str_value)
+{
+    var value = Number(str_value)
+    var gen = getGen(icon.ID);
+    switch(comp)
+    {
+        case "=":
+            return gen == value;
+        case ">":
+            return gen > value;
+        case "<":
+            return gen < value;
+    }
+}
+
+function checkID(icon, comp, str_value)
+{
+    var value = Number(str_value)
+    var icID = icon.ID;
+    switch(comp)
+    {
+        case "=":
+            return icID == value;
+        case ">":
+            return icID > value;
+        case "<":
+            return icID < value;
     }
 }
 
@@ -184,6 +254,30 @@ var operators =
     "capture_rate":checkCR,
 
     "forms":checkForms,
+
+    "gen":checkGeneration,
+
+    "id":checkID,
+    "natdex":checkID
+}
+
+var desc =
+{
+    "checkName":"The name of the Pokemon's default form (i.e: Pikachu, Zoroark, Dunsparce)",
+    "checkType":"The elemental type(s) of the Pokemon (i.e: Fire, Water, Grass)",
+    "checkCol":"The internally specified colour of the Pokemon (i.e: Green, Purple, White)",
+    "checkWeight":"The internally specified weight of the Pokemon (i.e: 300, 5, 999)",
+    "checkHP":"The base stat for the Pokemon's HP stat",
+    "checkAtk":"The base stat for the Pokemon's ATTACK stat",
+    "checkDef":"The base stat for the Pokemon's DEFENSE stat",
+    "checkSpA":"The base stat for the Pokemon's SPECIAL ATTACK stat",
+    "checkSpD":"The base stat for the Pokemon's SPECIAL DEFENSE stat",
+    "checkSpe":"The base stat for the Pokemon's SPEED stat",
+    "checkBST":"The base stat total of a Pokemon (The sum of all of its base stats for HP, Atk, SpA, Def, SpD, Spe)",
+    "checkCR":"The internally specified capture rate of a Pokemon (i.e: 3, 255, 37)",
+    "checkForms":"The number of forms a Pokemon has (Including its default form)",
+    "checkGeneration":"The generation of mainline Pokemon games that the Pokemon was introduced in (i.e: 1, 5, 8)",
+    "checkID":"The national dex number of the Pokemon (i.e: 1, 76, 904)"
 }
 
 function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */iconList)

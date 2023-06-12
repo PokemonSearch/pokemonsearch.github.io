@@ -21,7 +21,7 @@ class TextBox
         this.text = "";
         this.box = createElement("input","hello");
         this.box.show();
-        this.box.style("border-radius", "20px").style("padding-left","20px").style("font-family","BlackWhite").style("font-size","30px");
+        this.box.style("border-radius", "20px").style("padding-left","20px").style("font-family","BlackWhite").style("font-size","21px");
         console.log(this.box.style("border-radius"))
     }
     
@@ -81,7 +81,7 @@ class Button
 
         fill(this.color);
         rect(this.pos.x, this.pos.y, this.width, this.height, 20);
-        instant_text(this.text, this.height,this.pos.x + this.width/2, this.pos.y - this.height/2, this.text_color, true);
+        instant_text(this.text, this.height*0.7,this.pos.x + this.width/2, this.pos.y - (this.height/2)/0.6, this.text_color, true);
     }
 
     over()

@@ -48,7 +48,7 @@ class Panel
         
         var imageSize = 300;
 
-        var fontSize = 50;
+        var fontSize = 50*0.7;
         noSmooth();
         this.bgscroll += 5*deltaTime/1000;
         var bgHeight = this.height;
@@ -69,7 +69,7 @@ class Panel
         var sprite = this.activePokemon.img[this.displayed_form];
         var displayName = this.activePokemon.name;
         var stats = this.activePokemon.data.stats;
-        var stat_names = ["HP","Atk","Def","SpA","SpD","Spe"];
+        var stat_names = ["HP ","Atk","Def","SpA","SpD","Spe"];
         var types = this.activePokemon.data.types
 
         if(this.displayed_form > 0)
@@ -78,7 +78,6 @@ class Panel
             sprite = form.img;
             displayName = form.name + " " + this.activePokemon.name;
             stats = form.data.stats;
-            stat_names = ["HP","Atk","Def","SpA","SpD","Spe"];
             types = form.data.types;
         }
 
@@ -107,8 +106,10 @@ class Panel
             rect(x*(1920/w), y, (this.stat_bars[i]**0.9)*4*(w/1920), 40, 10);
             textSize(fontSize);
             noSmooth();
-            var s = stat_names[i] + "   " + Math.round(this.stat_bars[i]).toString();
-            instant_text(s, fontSize, x + textWidth(s)/2 - textWidth(stat_names[i]) - w*0.1, y - textAscent(fontSize), color(255), false);
+            var s1 = stat_names[i]
+            var s2 = Math.round(this.stat_bars[i]).toString();
+            instant_text(s1, fontSize, x - w*0.1, y - textAscent(fontSize), color(255), false);
+            instant_text(s2, fontSize, x - w*0.1 + 100, y - textAscent(fontSize), color(255), false);
         }
 
 
