@@ -86,11 +86,15 @@ class Panel
         
         if(types.length == 1)
         {
-            instant_text(titleCase(types[0].type.name), fontSize, w*0.45 + imageSize/2, this.y + height*0.32 + imageSize/2 + fontSize, w/2, color(255), true);
+            instant_text(titleCase(types[0].type.name), fontSize/1.7, w*0.45 + imageSize/2, this.y + height*0.35 + imageSize/2 + fontSize, w/2, color(255), true);
         }
         else
         {
-            instant_text(titleCase(types[0].type.name) + " / " + titleCase(types[1].type.name), fontSize, w*0.45 + imageSize/2, this.y + height*0.32 + imageSize/2 + fontSize, w/2, color(255), true);
+            var fullText = titleCase(types[0].type.name) + " | " + titleCase(types[1].type.name)
+            var splitPos = fullText.indexOf("|")
+            var subText = titleCase(types[0].type.name) + " "
+            textSize(fontSize/1.7)
+            instant_text(fullText, fontSize/1.7, w*0.45 + imageSize/2 + textWidth(fullText)/2 - textWidth(subText) - textWidth("|")/2, this.y + height*0.35 + imageSize/2 + fontSize, w/2, color(255), false);
         }
 
 
