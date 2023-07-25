@@ -1,7 +1,7 @@
 
 //const { Renderer } = require("../../../../.vscode/extensions/samplavigne.p5-vscode-1.2.12/p5types");
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-var version = "0.4"
+var version = "0.41"
 var w = window.innerWidth;
 var h = window.innerHeight;
 const MAX_ID = 1010; //[number of pokemon]
@@ -10,6 +10,7 @@ var font_pixeloid;
 var initialized = false;
 var scrolling = 0;
 var clicked = true;
+var dragging = false
 var targetScroll = 0;
 var icons = []
 var textBuffer = []
@@ -30,10 +31,16 @@ var running = 0;
 var overlay = false;
 var finishedLoading = 0;
 var helpText = "";
-var effectiveRatio = Math.min(w, h)/Math.max(w, h)
-var effectiveScale = effectiveRatio/0.48802083333333335
+var effectiveRatio = Math.min(w, h)/1080
+var effectiveScale = effectiveRatio
+var drag_x = 0
+var drag_y = 0
+var lastFrameMouseX = 0
+var lastFrameMouseY = 0
 function setup()
 {
+    lastFrameMouseX = mouseX
+    lastFrameMouseY = mouseY
     console.log("eR: " + str(effectiveRatio))
     textLeading(20); //default is 20
     var barReduction = w/4
@@ -160,7 +167,7 @@ function draw()
     textFont(font_pixeloid);
     noSmooth();
     viewrange = [pokemonDisplay.y + pokemonDisplay.height, h];
-    var buffer = 10
+    var buffer = 10*effectiveScale
     var size = 100*effectiveScale
     var rowSize = Math.floor((9*(200/size)*(w/1920)) - 1);
     var finalRow = Math.floor((chosenIcons.length - 1)/rowSize) + 1;
@@ -186,14 +193,20 @@ function draw()
         analysis();
     }
 
+    drag_x = mouseX - lastFrameMouseX
+    drag_y = mouseY - lastFrameMouseY
+    if(dragging)
+    {
+        targetScroll += -drag_y
+    }
 
     for(var i = 0; i < chosenIcons.length; i++)
     {
         if(chosenIcons[i] == null){continue;}
         var row = Math.floor(i/rowSize);
-        var right_x = 10 + size*rowSize + buffer*rowSize
-        var x = 10 + size*i + buffer*i - row*(size*rowSize + buffer*rowSize) + (w - right_x)/2
-        var y = 10 + size*(row + 1) + buffer*row - scrolling + pokemonDisplay.y + pokemonDisplay.height;
+        var right_x = buffer + size*rowSize + buffer*rowSize
+        var x = buffer + size*i + buffer*i - row*(size*rowSize + buffer*rowSize) + (w - right_x)/2
+        var y = buffer + size*(row + 1) + buffer*row - scrolling + pokemonDisplay.y + pokemonDisplay.height;
         if(rendererd(y, size))
         {
             tint(255, 255, 255, 255);
@@ -261,6 +274,8 @@ function draw()
     instant_text(header, 29*0.7, 10, -10);
 
     if(clicked){clicked = false;}
+    lastFrameMouseX = mouseX
+    lastFrameMouseY = mouseY
 }
 
 function instant_text(string, size, x, y, colour = color(255), middle = false)
@@ -296,6 +311,16 @@ function mouseWheel(event) {
 function mouseClicked() 
 {
     clicked = true;
+}
+
+function mousePressed() 
+{
+    dragging = true;
+}
+
+function mouseReleased()
+{
+    dragging = false;
 }
 
 function keyPressed() 
