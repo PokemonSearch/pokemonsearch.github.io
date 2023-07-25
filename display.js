@@ -30,8 +30,11 @@ var running = 0;
 var overlay = false;
 var finishedLoading = 0;
 var helpText = "";
+var effectiveRatio = Math.min(w, h)/Math.max(w, h)
+var effectiveScale = effectiveRatio/0.48802083333333335
 function setup()
 {
+    console.log("eR: " + str(effectiveRatio))
     textLeading(20); //default is 20
     var barReduction = w/4
     searchBar = new TextBox(barReduction/2, 10, w - barReduction, 30);
@@ -158,8 +161,8 @@ function draw()
     noSmooth();
     viewrange = [pokemonDisplay.y + pokemonDisplay.height, h];
     var buffer = 10
-    var size = 100
-    var rowSize = (9*(200/size)*(w/1920)) - 1;
+    var size = 100*effectiveScale
+    var rowSize = Math.floor((9*(200/size)*(w/1920)) - 1);
     var finalRow = Math.floor((chosenIcons.length - 1)/rowSize) + 1;
     var fullHeight = 10 + size*(finalRow + 1) + buffer*finalRow - h + pokemonDisplay.y + pokemonDisplay.height;
     var rowLength = 10 + size*rowSize + buffer*rowSize;
@@ -188,7 +191,8 @@ function draw()
     {
         if(chosenIcons[i] == null){continue;}
         var row = Math.floor(i/rowSize);
-        var x = 10 + size*i + buffer*i - row*(size*rowSize + buffer*rowSize)
+        var right_x = 10 + size*rowSize + buffer*rowSize
+        var x = 10 + size*i + buffer*i - row*(size*rowSize + buffer*rowSize) + (w - right_x)/2
         var y = 10 + size*(row + 1) + buffer*row - scrolling + pokemonDisplay.y + pokemonDisplay.height;
         if(rendererd(y, size))
         {
@@ -235,11 +239,20 @@ function draw()
     var loadingPercent = Math.round((finishedLoading/MAX_ID)*100);
     var loadText = ""
     var baseHeader = "JSDex ( v" + version + " )\n\n(Data/Sprites sourced from PokeAPI)"
+    if(w <= 960 || h <= 540)
+    {
+        baseHeader += "\n\nResolution not supported for Pokemon dropdown display"
+    }
+    console.log(w)
+    if(w <= 1024)
+    {
+        baseHeader = "\n\n\n(Data/Sprites sourced from PokeAPI)\n\nResolution not supported for Pokemon dropdown display"
+    }
     if(loadingPercent < 100)
     {
         loadText = " (Loading: " + loadingPercent + "%)"
-        loadButton.pos.x = textWidth(baseHeader + "( 100% )") - 30;
-        loadButton.pos.y = 10 + textAscent()*2 + loadButton.height/4;
+        loadButton.pos.x = textWidth(baseHeader + "( 100% )") - 110;
+        loadButton.pos.y = textAscent()*2 + loadButton.height/8;
         loadButton.text = loadMode;
         loadButton.render();
     }

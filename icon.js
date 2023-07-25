@@ -3,6 +3,16 @@ var form_whitelist =
         "25": [1, 2, 4, 5, 14, 16],
         "658": [2],
         "718": [1,2,3],
+        "735": [],
+        "738": [],
+        "743": [],
+        "752": [],
+        "754": [],
+        "758": [],
+        "774": [7,8,9,10,11,12],
+        "777": [],
+        "778": [],
+        "784": [],
         "1007": [],
         "1008": []
     }
@@ -80,7 +90,7 @@ class PokeIcon
         var overX = (mouseX >= x && mouseX <= x + size)
         var overY = (mouseY >= y && mouseY <= y + size)
         var over = overX && overY;
-        if(over && mouseY >= viewrange[0] && mouseY <= viewrange[1] && !overlay)
+        if(over && mouseY >= viewrange[0] && mouseY <= viewrange[1] && !overlay && w > 960 && h > 540)
         {
             scale = 1.3;
             if(clicked)
