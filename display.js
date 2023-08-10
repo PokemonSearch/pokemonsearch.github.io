@@ -37,18 +37,21 @@ var drag_x = 0
 var drag_y = 0
 var lastFrameMouseX = 0
 var lastFrameMouseY = 0
+var noDropdown = w <= 1024
+var w_scale = w/1920.0 
 function setup()
 {
     lastFrameMouseX = mouseX
     lastFrameMouseY = mouseY
     console.log("eR: " + str(effectiveRatio))
-    textLeading(20); //default is 20
+    textLeading(20*w_scale); //default is 20
     var barReduction = w/4
-    searchBar = new TextBox(barReduction/2, 10, w - barReduction, 30);
-    sortButton = new Button(barReduction/2 + searchBar.width + 20, 15, 100, 30, color(100, 100, 120), color(255, 255, 255), toggleMode);
-    helpButton = new Button(sortButton.pos.x + sortButton.width + 20, 15, 60, 30, color(100, 100, 120), color(255, 255, 255), swapOverlay);
+    var search_x = Math.min(barReduction/2, w - w_scale*(100 + 60))
+    searchBar = new TextBox(barReduction/2, 10, w - barReduction, 30*w_scale);
+    helpButton = new Button(w - 90*w_scale, 15, 60*w_scale, 30*w_scale, color(100, 100, 120), color(255, 255, 255), swapOverlay);
     helpButton.text = "?"
-    loadButton = new Button(sortButton.pos.x + 20, 15, 100, 30, color(100, 100, 120), color(255, 255, 255), swapLoading);
+    sortButton = new Button(helpButton.pos.x - helpButton.width/2 - 100*w_scale, 15, 100*w_scale, 30*w_scale, color(100, 100, 120), color(255, 255, 255), toggleMode);
+    loadButton = new Button(sortButton.pos.x + 50*w_scale, 15, 100*w_scale, 30*w_scale, color(100, 100, 120), color(255, 255, 255), swapLoading);
     pokemonDisplay = new Panel(600);
     viewrange = [0, h];
     font_pixeloid = loadFont("fonts/bw2 (t&i)(edited).ttf")
@@ -237,14 +240,14 @@ function draw()
         fill(40, 40, 40)
         var overlayX = w/16
         var overlayY = h/8
-        rect(overlayX, overlayY, (w - 2*overlayX), (h - 2*overlayY), (w/20 + h/20)/2);
+        rect(overlayX, overlayY, (w - 2*overlayX), (h - 2*overlayY) + 50*effectiveScale, (w/20 + h/20)/2);
         var oX = overlayX + (w/20 + h/20)/2;
-        var oY = overlayY + (w/20 + h/20)/2 - 25;
-        textSize(29*0.7)
-        instant_text("Welcome to CheeseMan's JSDex Data Base!", 29*0.7, w/2, overlayY + textAscent()/2 - 15, color(255), true);
-        textLeading(27);
-        instant_text(helpText, 23*0.7, oX, oY - 5, color(255), false);
-        textLeading(20);
+        var oY = overlayY + (w/20 + h/20)/2 - 25*w_scale;
+        textSize(29*0.7*w_scale)
+        instant_text("Welcome to CheeseMan's JSDex Data Base!", 29*0.7*w_scale, w/2, overlayY + textAscent()/2 - 15*w_scale, color(255), true);
+        textLeading(27*w_scale);
+        instant_text(helpText, 23*0.7*(w/1920), oX, oY + 5*w_scale, color(255), false);
+        textLeading(20*w_scale);
     }
     helpButton.render();
 
@@ -252,26 +255,29 @@ function draw()
     var loadingPercent = Math.round((finishedLoading/MAX_ID)*100);
     var loadText = ""
     var baseHeader = "JSDex ( v" + version + " )\n\n(Data/Sprites sourced from PokeAPI)"
+    var testHeader = "(Data/Sprites sourced from PokeAPI)"
     if(w <= 960 || h <= 540)
     {
         baseHeader += "\n\nResolution not supported for Pokemon dropdown display"
     }
     console.log(w)
-    if(w <= 1024)
+    if(noDropdown)
     {
-        baseHeader = "\n\n\n(Data/Sprites sourced from PokeAPI)\n\nResolution not supported for Pokemon dropdown display"
+        baseHeader = "\n\n\nResolution not supported for Pokemon dropdown display"
+        testHeader = "Resolution not supported for Pokemon dropdown display"
     }
     if(loadingPercent < 100)
     {
         loadText = " (Loading: " + loadingPercent + "%)"
-        loadButton.pos.x = textWidth(baseHeader + "( 100% )") - 110;
-        loadButton.pos.y = textAscent()*2 + loadButton.height/8;
+        loadButton.pos.x = textWidth(testHeader + " (Loading: 100%) ") + loadButton.width/2;
+        loadButton.pos.y = searchBar.pos.y + searchBar.height + loadButton.height/2;
+        console.log(loadButton.pos.y)
         loadButton.text = loadMode;
         loadButton.render();
     }
     var header = baseHeader + loadText;
     fill(255,0,0);
-    instant_text(header, 29*0.7, 10, -10);
+    instant_text(header, 29*0.7*w_scale, 30 + textAscent(), -10);
 
     if(clicked){clicked = false;}
     lastFrameMouseX = mouseX

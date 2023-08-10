@@ -95,18 +95,30 @@ class PokeIcon
             scale = 1.3;
             if(clicked)
             {
-                if(pokemonDisplay.active && pokemonDisplay.activePokemon == this && pokemonDisplay.displayed_form == 0)
+                if(noDropdown)
                 {
-                    pokemonDisplay.active = false;
+                    this.current_form++;
+                    if(this.current_form > this.forms.length)
+                    {
+                        this.current_form = 0;
+                    }
                 }
                 else
                 {
-                    pokemonDisplay.setActivePokemon(this, true);
+                    if(pokemonDisplay.active && pokemonDisplay.activePokemon == this && pokemonDisplay.displayed_form == 0)
+                    {
+                        pokemonDisplay.active = false;
+                    }
+                    else
+                    {
+                        pokemonDisplay.setActivePokemon(this, true);
+                    }
                 }
             }
             if(this.hasData)
             {   
-                buffer_text(this.name, 20*0.7, x + size/2, y + size/2 + 20, color(255, 255, 255, 255*((this.raw_scale - 1)/(scale - 1))), true);
+                console.log(size);
+                buffer_text(this.name, 20*0.7*size/86.20370370370371, x + size/2, y + size/2 + 20, color(255, 255, 255, 255*((this.raw_scale - 1)/(scale - 1))), true);
             }
         }
         this.raw_scale += 0.01*deltaTime*(scale - this.raw_scale);

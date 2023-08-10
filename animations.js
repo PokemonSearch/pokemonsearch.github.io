@@ -21,7 +21,7 @@ class TextBox
         this.text = "";
         this.box = createElement("input","hello");
         this.box.show();
-        this.box.style("border-radius", "20px").style("padding-left","20px").style("font-family","BlackWhite").style("font-size","21px");
+        this.box.style("border-radius", "20px").style("padding-left",(20*(height/30))+"px").style("font-family","BlackWhite").style("font-size",(21*(height/30))+"px");
         console.log(this.box.style("border-radius"))
     }
     
