@@ -64,12 +64,12 @@ class PokeIcon
             {
                 var form_data_response = await fetch("data/api/"+this.ID+"/"+formName+"/api.json").then((response) => response.json())
                 this.img.push(a_img)
-                var fromObj = {
+                var formObj = {
                     name: titleCase(formName),
                     img: a_img,
                     data: form_data_response
                 }
-                this.forms.push(fromObj)
+                this.forms.push(formObj)
             }
             else
             {
@@ -107,7 +107,7 @@ class PokeIcon
                 {
                     if(pokemonDisplay.active && pokemonDisplay.activePokemon == this && pokemonDisplay.displayed_form == 0)
                     {
-                        pokemonDisplay.active = false;
+                        pokemonDisplay.close();
                     }
                     else
                     {
@@ -118,7 +118,12 @@ class PokeIcon
             if(this.hasData)
             {   
                 console.log(size);
-                buffer_text(this.name, 20*0.7*size/86.20370370370371, x + size/2, y + size/2 + 20, color(255, 255, 255, 255*((this.raw_scale - 1)/(scale - 1))), true);
+                var pkname = this.name
+                if(this.current_form != 0)
+                {
+                    pkname = this.forms[this.current_form - 1].name + " " + this.name
+                }
+                buffer_text(pkname, 20*0.7*size/86.20370370370371, x + size/2, y + size/2 + 20, color(255, 255, 255, 255*((this.raw_scale - 1)/(scale - 1))), true);
             }
         }
         this.raw_scale += 0.01*deltaTime*(scale - this.raw_scale);

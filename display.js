@@ -1,7 +1,7 @@
 
 //const { Renderer } = require("../../../../.vscode/extensions/samplavigne.p5-vscode-1.2.12/p5types");
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-var version = "0.5.0"
+var version = "0.5.1"
 var w = window.innerWidth;
 var h = window.innerHeight;
 const MAX_ID = 1010; //[number of pokemon]
@@ -39,8 +39,14 @@ var lastFrameMouseX = 0
 var lastFrameMouseY = 0
 var noDropdown = w <= 1024
 var w_scale = w/1920.0 
+var mobile = false
+var noSwipeTimer = 0.1;
+var ignoreSwipe = 0;
 function setup()
 {
+    dragMouseY = mouseY;
+    dragMouseX = mouseX;
+    mobile = navigator.userAgentData.mobile;
     lastFrameMouseX = mouseX
     lastFrameMouseY = mouseY
     console.log("eR: " + str(effectiveRatio))
@@ -69,6 +75,14 @@ In "OR" mode, Pokemon will be hidden if they do not fit ANY of the filters.
 In "AND" mode, Pokemon will be hidden if they do not fit ALL of the filters.
 The list of available filters includes:
 `
+    if(mobile)
+    {
+        helpText += "(mobile)"
+    }
+    else
+    {
+        helpText += "(not mobile)"
+    }
     keys = Object.keys(operators);
     for(var o = 0; o < keys.length; o++)
     {
@@ -198,9 +212,36 @@ function draw()
 
     drag_x = mouseX - lastFrameMouseX
     drag_y = mouseY - lastFrameMouseY
-    if(dragging)
+    if(dragging && Math.abs(drag_y) < h/5)
     {
-        targetScroll += -drag_y
+        if(ignoreSwipe <= 0)
+        {
+            targetScroll += -drag_y
+        }
+        else
+        {
+            ignoreSwipe--;
+        }
+    }
+    else if(dragging)
+    {
+        console.log("overscroll: " + Math.abs(drag_y) + " >>> " + (h/5))
+    }
+    if(drag_y == 0)
+    {
+        if(noSwipeTimer > 0)
+        {
+            noSwipeTimer -= deltaTime/1000
+        }
+        else
+        {
+            ignoreSwipe = 1;
+        }
+        
+    }
+    else
+    {
+        noSwipeTimer = 0;
     }
 
     for(var i = 0; i < chosenIcons.length; i++)
@@ -240,7 +281,13 @@ function draw()
         fill(40, 40, 40)
         var overlayX = w/16
         var overlayY = h/8
-        rect(overlayX, overlayY, (w - 2*overlayX), (h - 2*overlayY) + 50*effectiveScale, (w/20 + h/20)/2);
+        //(h - 2*overlayY) + 50*effectiveScale
+        textSize(23*0.7*(w/1920));
+        var lineCount = helpText.split(/\r\n|\r|\n/).length
+        var bodyHeight = (textAscent() + 20*w_scale)*lineCount
+        textSize(29*0.7*w_scale)
+        var headerHeight = textAscent()
+        rect(overlayX, overlayY, (w - 2*overlayX), headerHeight + bodyHeight - 150*w_scale, (w/20 + h/20)/2);
         var oX = overlayX + (w/20 + h/20)/2;
         var oY = overlayY + (w/20 + h/20)/2 - 25*w_scale;
         textSize(29*0.7*w_scale)
@@ -260,7 +307,6 @@ function draw()
     {
         baseHeader += "\n\nResolution not supported for Pokemon dropdown display"
     }
-    console.log(w)
     if(noDropdown)
     {
         baseHeader = "\n\n\nResolution not supported for Pokemon dropdown display"
@@ -271,7 +317,6 @@ function draw()
         loadText = " (Loading: " + loadingPercent + "%)"
         loadButton.pos.x = textWidth(testHeader + " (Loading: 100%) ") + loadButton.width/2;
         loadButton.pos.y = searchBar.pos.y + searchBar.height + loadButton.height/2;
-        console.log(loadButton.pos.y)
         loadButton.text = loadMode;
         loadButton.render();
     }
@@ -314,6 +359,11 @@ function mouseWheel(event) {
     //return false;
 }
 
+function resetDrag()
+{
+    dragging = false;
+}
+
 function mouseClicked() 
 {
     clicked = true;
@@ -326,12 +376,17 @@ function mousePressed()
 
 function mouseReleased()
 {
-    dragging = false;
+    resetDrag();
 }
 
 function keyPressed() 
 {
 
+}
+
+function closePanel()
+{
+    pokemonDisplay.close();
 }
 
 

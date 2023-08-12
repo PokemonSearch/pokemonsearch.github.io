@@ -11,6 +11,8 @@ class Panel
         this.y = -this.height;
         this.stat_bars = [0, 0, 0, 0, 0, 0];
         this.displayed_form = 0;
+        this.closeButton = new Button(0, 0, 100*w_scale, 35*w_scale, color(50, 50, 50), color(255, 255, 255), closePanel);
+        this.closeButton.text = "Close"
     }
 
     render()
@@ -39,6 +41,11 @@ class Panel
         {
             this.y = -this.height;
         }
+    }
+
+    close()
+    {
+        this.active = false;
     }
 
     draw()
@@ -178,6 +185,9 @@ class Panel
             if(a.is_hidden){col = color(240,230,140);}
             instant_text(abilityName, fontSize, abilitiesX, abilitiesY + (textAscent(fontSize) + this.height*0.1)*(i + 1), col, true);
         }
+        this.closeButton.pos.x = w - this.closeButton.width*1.2;
+        this.closeButton.pos.y = this.y + this.height - this.closeButton.height*1.2;
+        this.closeButton.render()
     }
 
     setActivePokemon(icon, isActive = true)

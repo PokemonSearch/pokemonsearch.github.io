@@ -80,7 +80,7 @@ class Button
         
 
         fill(this.color);
-        rect(this.pos.x, this.pos.y, this.width, this.height, 20);
+        rect(this.pos.x, this.pos.y, this.width, this.height, this.height/3);
         instant_text(this.text, this.height*0.7,this.pos.x + this.width/2, this.pos.y - (this.height/2)/0.6, this.text_color, true);
     }
 
