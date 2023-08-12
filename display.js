@@ -46,7 +46,6 @@ function setup()
 {
     dragMouseY = mouseY;
     dragMouseX = mouseX;
-    mobile = navigator.userAgentData.mobile;
     lastFrameMouseX = mouseX
     lastFrameMouseY = mouseY
     console.log("eR: " + str(effectiveRatio))
