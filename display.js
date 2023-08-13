@@ -1,7 +1,7 @@
 
 //const { Renderer } = require("../../../../.vscode/extensions/samplavigne.p5-vscode-1.2.12/p5types");
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-var version = "0.5.2"
+var version = "0.5.3"
 var w = window.innerWidth;
 var h = window.innerHeight;
 const MAX_ID = 1010; //[number of pokemon]
@@ -74,14 +74,6 @@ In "OR" mode, Pokemon will be hidden if they do not fit ANY of the filters.
 In "AND" mode, Pokemon will be hidden if they do not fit ALL of the filters.
 The list of available filters includes:
 `
-    if(mobile)
-    {
-        helpText += "(mobile)"
-    }
-    else
-    {
-        helpText += "(not mobile)"
-    }
     keys = Object.keys(operators);
     for(var o = 0; o < keys.length; o++)
     {
