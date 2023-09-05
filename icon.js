@@ -1,3 +1,14 @@
+window.global = window;
+
+const windowFetch = window.fetch.bind(window);
+const dex = window.global.window.dex.Dex
+const smogon = new window.global.window.smogon.Smogon(windowFetch);
+const gens = new window.global.window.generations.Generations(dex);
+
+
+
+
+
 var form_whitelist = 
     {
         "25": [1, 2, 4, 5, 14, 16],
@@ -17,6 +28,19 @@ var form_whitelist =
         "1008": []
     }
 
+var smogon_tiers = 
+{
+    "gen1":["ou","uu","nu","ubers"],
+    "gen2":["ou","uu","nu","ubers"],
+    "gen3":["ou","uu","nu","ubers"],
+    "gen4":["ou","uu","nu","ubers","lc"],
+    "gen5":["ou","uu","ru","nu","ubers","lc"],
+    "gen6":["ou","uu","ru","nu","pu","ubers","lc"],
+    "gen7":["ou","uu","ru","nu","pu","ubers","lc"],
+    "gen8":["ou","uu","ru","nu","pu","ubers","lc"],
+    "gen9":["ou","uu","ru","nu","pu","ubers","lc"]
+}
+
 
 class PokeIcon
 {
@@ -31,6 +55,7 @@ class PokeIcon
         this.hasData = false;
         this.data = null;
         this.spec_data = null
+        this.smogon_data = null
         this.alpha = 0;
         this.loaded = false;
         this.name = "";
@@ -48,8 +73,37 @@ class PokeIcon
         var spec_response = await fetch("data/api/"+this.ID+"/species.json").then((response) => response.json())
         this.data = response;
         this.spec_data = spec_response
-
         this.name = splitTitleCase(this.data.species.name);
+        console.log(this.name);
+        this.smogon_data = {
+            sets: {}
+        };
+        for(var i = getGen(this.ID); i <= 9; i++)
+        {
+            var genid = "gen"+(i).toString()
+            this.smogon_data.sets[i.toString()] = []
+            for(var t = 0; t < smogon_tiers[genid].length; t++)
+            {
+                var tiername = genid + smogon_tiers[genid][t]
+                var full_data = await smogon.sets(gens.get(i), this.name, tiername)
+                for(var d = 0; d < full_data.length; d++)
+                {
+                    var set_obj = {
+                        tierid: tiername,
+                        tier: "Gen " + i.toString() + " " + smogon_tiers[genid][t].toUpperCase(),
+                        data: full_data[d]
+                    }
+                    if(set_obj.data.length != 0)
+                    {
+                        this.smogon_data.sets[i.toString()].push(set_obj)
+                    }
+                }
+
+            }
+        }
+        console.log(this.smogon_data)
+        
+        
         var v = Object.keys(this.spec_data.varieties)
         
         for(var i = 1; i < v.length; i++)
@@ -170,3 +224,4 @@ function titleCase(/**@type String */str)
     var base = str.toLowerCase()
     return base.charAt(0).toUpperCase() + base.slice(1);
 }
+

@@ -1,7 +1,8 @@
 
 //const { Renderer } = require("../../../../.vscode/extensions/samplavigne.p5-vscode-1.2.12/p5types");
+
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-var version = "0.5.3"
+var version = "0.6"
 var w = window.innerWidth;
 var h = window.innerHeight;
 const MAX_ID = 1010; //[number of pokemon]
@@ -303,7 +304,7 @@ function draw()
         baseHeader = "\n\n\nResolution not supported for Pokemon dropdown display"
         testHeader = "Resolution not supported for Pokemon dropdown display"
     }
-    if(loadingPercent < 100)
+    if(loadingPercent < 100 && !pokemonDisplay.active)
     {
         loadText = " (Loading: " + loadingPercent + "%)"
         loadButton.pos.x = textWidth(testHeader + " (Loading: 100%) ") + loadButton.width/2;
@@ -313,7 +314,7 @@ function draw()
     }
     var header = baseHeader + loadText;
     fill(255,0,0);
-    instant_text(header, 29*0.7*w_scale, 30 + textAscent(), -10);
+    if(!pokemonDisplay.active){instant_text(header, 29*0.7*w_scale, 30 + textAscent(), -10)};
 
     if(clicked){clicked = false;}
     lastFrameMouseX = mouseX
@@ -378,6 +379,37 @@ function keyPressed()
 function closePanel()
 {
     pokemonDisplay.close();
+}
+
+function increaseGen()
+{
+    pokemonDisplay.activeGen++;
+    if(pokemonDisplay.activeGen>9)
+    {
+        pokemonDisplay.activeGen == 9;
+    }
+    pokemonDisplay.activeSet = 0;
+}
+
+function decreaseGen()
+{
+    pokemonDisplay.activeGen--;
+    if(pokemonDisplay.activeGen<1)
+    {
+        pokemonDisplay.activeGen == 1;
+    }
+    pokemonDisplay.activeSet = 0;
+}
+
+
+function increaseSet()
+{
+    pokemonDisplay.activeSet++;
+}
+
+function decreaseSet()
+{
+    pokemonDisplay.activeSet--;
 }
 
 
