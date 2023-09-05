@@ -26,10 +26,10 @@ class Panel
         this.y = -this.height;
         this.stat_bars = [0, 0, 0, 0, 0, 0];
         this.displayed_form = 0;
-        this.tabCount = 2;
+        this.tabCount = 3;
         this.closeButton = new Button(0, 0, 100*w_scale, 35*w_scale, color(50, 50, 50), color(255, 255, 255), closePanel);
         this.closeButton.text = "Close"
-        this.tabIcons = [loadImage("sprites/pokeball.png"),loadImage("sprites/specball.png")]
+        this.tabIcons = [loadImage("sprites/pokeball.png"),loadImage("sprites/specball.png"),loadImage("sprites/premball.png")]
     }
 
     render()
@@ -220,17 +220,6 @@ class Panel
                 {
                     
                 }
-                if(this.activeGen == 2)
-                {
-                    textSize(fontSize)
-                    instant_text("Held Item: " + set.item, fontSize/2, (left_side + w)/2, set.moves.length*(this.height/8) + this.height/4 + this.y + textAscent()/2, w/2, color(150, 150, 0), true);
-                }
-                if(this.activeGen == 3)
-                {
-                    textSize(fontSize)
-                    instant_text("Held Item: " + set.item, fontSize/2, (left_side + w)/2, set.moves.length*(this.height/8) + this.height/4 + this.y + textAscent()/2, w/2, color(150, 150, 0), true);
-                    if(set.ability != null){instant_text("Ability: " + set.ability, fontSize/2, (left_side + w)/2, (set.moves.length+0.75)*(this.height/8) + this.height/4 + this.y + textAscent()/2, w/2, color(150, 150, 0), true);}
-                }
                 if(this.activeGen >= 4)
                 {
                     instant_text("EV Spread:", fontSize/1.5, w*0.05, (this.y + this.height*0.25 - 60) - textAscent(fontSize/1.5)/2, color(255), false);
@@ -258,10 +247,27 @@ class Panel
                         }
                         left_side = w*0.15*(1920/w) + 530*w/1920
                     }
+                }
+                if(this.activeGen >= 2)
+                {
                     textSize(fontSize)
-                    instant_text("Held Item: " + set.item, fontSize/2, (left_side + w)/2, set.moves.length*(this.height/8) + this.height/4 + this.y + textAscent()/2, w/2, color(150, 150, 0), true);
+                    var held_text_x = (left_side + w)/2
+                    var held_text_y = set.moves.length*(this.height/8) + this.height/4 + this.y + textAscent()/2
+                    var held_text = "Held Item: " + set.item
+                    instant_text(held_text, fontSize/2, held_text_x, held_text_y, w/2, color(150, 150, 0), true);
+                    var item_id = set.item.toLowerCase().replace(" ","-");
+                    if(item_id in item_atlas)
+                    {
+                        var item_sprite = item_atlas[item_id];
+                        noSmooth();
+                        image(item_sprite, held_text_x + textWidth(held_text)/2, held_text_y + textAscent(fontSize/2)/2 + fontSize/4 + Math.sin((totalTime/(200*Math.PI)))*2.5 - 2.5, fontSize, fontSize);
+                    }
+                }
+                if(this.activeGen >= 3)
+                {
                     if(set.ability != null){instant_text("Ability: " + set.ability, fontSize/2, (left_side + w)/2, (set.moves.length+0.75)*(this.height/8) + this.height/4 + this.y + textAscent()/2, w/2, color(150, 150, 0), true);}
                 }
+                
                 
                 for(var i = 0; i < set.moves.length; i++)
                 {
@@ -270,6 +276,28 @@ class Panel
                 }
                 
             }
+        }
+        else if(this.activeTab == 2)
+        {
+            textSize(fontSize/2)
+            var head_y = this.y + fontSize
+            this.lastGenButton.pos.y = head_y + textAscent()/2
+            this.lastGenButton.pos.x = w*0.7
+            this.lastGenButton.render()
+            textSize(fontSize/2)
+            this.nextGenButton.pos.y = head_y + textAscent()/2
+            this.nextGenButton.pos.x = w*0.7 + this.lastGenButton.width*1.1
+            this.nextGenButton.render()
+            var min_gen = getGen(this.activePokemon.ID)
+            if(this.activeGen < min_gen)
+            {
+                this.activeGen = min_gen
+            }
+            if(this.activeGen > 9)
+            {
+                this.activeGen = 9
+            }
+            instant_text("Smogon Battle Stats for " + displayName + " (6v6 Singles, Gen " + this.activeGen.toString() + ")", fontSize/2, w*0.5, head_y, w/2, color(255), true);
         }
 
 

@@ -2,10 +2,11 @@
 //const { Renderer } = require("../../../../.vscode/extensions/samplavigne.p5-vscode-1.2.12/p5types");
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-var version = "0.6"
+var version = "0.6.0"
 var w = window.innerWidth;
 var h = window.innerHeight;
 const MAX_ID = 1010; //[number of pokemon]
+var MAX_ITEMS = 2050;
 var fin = 0;
 var font_pixeloid;
 var initialized = false;
@@ -16,6 +17,7 @@ var targetScroll = 0;
 var icons = []
 var textBuffer = []
 var viewrange = [0, 0];
+var item_atlas = {}
 /**@type Panel */
 var pokemonDisplay;
 /**@type TextBox */
@@ -31,6 +33,7 @@ var chosenIcons = [];
 var running = 0;
 var overlay = false;
 var finishedLoading = 0;
+var item_finishedLoading = 0;
 var helpText = "";
 var effectiveRatio = Math.min(w, h)/1080
 var effectiveScale = effectiveRatio
@@ -43,8 +46,11 @@ var w_scale = w/1920.0
 var mobile = false
 var noSwipeTimer = 0.1;
 var ignoreSwipe = 0;
+var startTime = 0;
+var totalTime = 0;
 function setup()
 {
+    startTime = new Date();
     dragMouseY = mouseY;
     dragMouseX = mouseX;
     lastFrameMouseX = mouseX
@@ -66,6 +72,7 @@ function setup()
     canvas.style("display","block");
     textAlign(LEFT, TOP);
     init()
+    item_init()
 
     helpText = `This website was designed to be used as a tool to sort Pokemon by their various attributes. 
 You can also take a look at each one by clicking on it, and the menu can be closed by clicking on the same Pokemon icon. 
@@ -170,8 +177,33 @@ async function init()
     analysis();
 }
 
+async function item_init()
+{
+    var item_list = await (await fetch('data/items/items.txt')).json()
+    MAX_ITEMS = item_list.length;
+    for(var i = 0; i < item_list.length; i++)
+    {
+        var item = item_list[i]
+        var item_file = new File([""], 'data/items/sprites/'+item+'/'+item+'.png')
+        try
+        {
+            item_atlas[item] = loadImage('data/items/sprites/'+item+'/'+item+'.png');
+            console.log(item);
+        }
+        catch
+        {
+            console.log(item + " does not have a sprite.");
+        }
+        item_finishedLoading++;
+        await delay(1);
+    }
+    console.log(item_atlas)
+}
+
 function draw()
 {
+    var endTime = new Date();
+    totalTime = endTime - startTime;
     background(20, 20, 20);
     textFont(font_pixeloid);
     noSmooth();
@@ -291,7 +323,7 @@ function draw()
     helpButton.render();
 
 
-    var loadingPercent = Math.round((finishedLoading/MAX_ID)*100);
+    var loadingPercent = Math.round(((finishedLoading + item_finishedLoading)/(MAX_ID+MAX_ITEMS))*100);
     var loadText = ""
     var baseHeader = "JSDex ( v" + version + " )\n\n(Data/Sprites sourced from PokeAPI)"
     var testHeader = "(Data/Sprites sourced from PokeAPI)"
@@ -412,5 +444,10 @@ function decreaseSet()
     pokemonDisplay.activeSet--;
 }
 
-
+function UrlExists(url) {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', url, false);
+    http.send();
+    return http.status!=404;
+  }
 
