@@ -60,10 +60,33 @@ class PokeIcon
         this.loaded = false;
         this.name = "";
         this.raw_scale = 2;
+        this.loaded_misc = false;
         this.loadData();
         if(!this.loaded)
         {
             this.loadInAnim(1);
+        }
+    }
+
+    async loadMiscData()
+    {
+        if(this.loaded_misc){return;}
+        this.loaded_misc = true;
+        console.log("loading misc for " + this.name);
+        for(var i = getGen(this.ID); i <= 9; i++)
+        {
+            try
+            {
+                var misc_data = await smogon.stats(gens.get(i), this.name)
+                if(misc_data != undefined)
+                {
+                    this.smogon_data.misc_stats[i.toString()] = misc_data
+                }
+            }
+            catch
+            {
+
+            }
         }
     }
 
@@ -76,7 +99,8 @@ class PokeIcon
         this.name = splitTitleCase(this.data.species.name);
         console.log(this.name);
         this.smogon_data = {
-            sets: {}
+            sets: {},
+            misc_stats: {}
         };
         for(var i = getGen(this.ID); i <= 9; i++)
         {
@@ -98,7 +122,6 @@ class PokeIcon
                         this.smogon_data.sets[i.toString()].push(set_obj)
                     }
                 }
-
             }
         }
         console.log(this.smogon_data)

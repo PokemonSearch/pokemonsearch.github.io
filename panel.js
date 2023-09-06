@@ -106,11 +106,12 @@ class Panel
             }
 
             image(sprite, w*0.45, this.y + height*0.25 - imageSize/2, imageSize, imageSize);
-            instant_text(displayName, fontSize, w*0.45 + imageSize/2, this.y + height*0.25 + imageSize/2 + fontSize, w/2, color(255), true);
+            instant_text(displayName, fontSize, w*0.45 + imageSize/2, this.y + height*0.25 + imageSize/2 + fontSize, color(255), true);
             
             if(types.length == 1)
             {
-                instant_text(titleCase(types[0].type.name), fontSize/1.7, w*0.45 + imageSize/2, this.y + height*0.35 + imageSize/2 + fontSize, w/2, color(255), true);
+                textSize(fontSize/1.7)
+                instant_text(titleCase(types[0].type.name), fontSize/1.7, w*0.45 + imageSize/2, this.y + height*0.35 + imageSize/2 + fontSize, color(255), true);
             }
             else
             {
@@ -118,7 +119,7 @@ class Panel
                 var splitPos = fullText.indexOf("|")
                 var subText = titleCase(types[0].type.name) + " "
                 textSize(fontSize/1.7)
-                instant_text(fullText, fontSize/1.7, w*0.45 + imageSize/2 + textWidth(fullText)/2 - textWidth(subText) - textWidth("|")/2, this.y + height*0.35 + imageSize/2 + fontSize, w/2, color(255), false);
+                instant_text(fullText, fontSize/1.7, w*0.45 + imageSize/2 + textWidth(fullText)/2 - textWidth(subText) - textWidth("|")/2, this.y + height*0.35 + imageSize/2 + fontSize, color(255), true);
             }
 
 
@@ -182,13 +183,13 @@ class Panel
             {
                 this.activeGen = 9
             }
-            instant_text("Smogon Sets for " + displayName + " (6v6 Singles, Gen " + this.activeGen.toString() + ")", fontSize/2, w*0.5, head_y, w/2, color(255), true);
+            instant_text("Smogon Sets for " + displayName + " (6v6 Singles, Gen " + this.activeGen.toString() + ")", fontSize/2, w*0.5, head_y, color(255), true);
             var total_width = w
             var set_count = this.activePokemon.smogon_data.sets[this.activeGen.toString()].length
             if(set_count < 1)
             {
                 textSize(fontSize)
-                instant_text("No Data", fontSize, w*0.5, this.y + this.height/2 - textAscent()/2, w/2, color(255), true);
+                instant_text("No Data", fontSize, w*0.5, this.y + this.height/2 - textAscent()/2, color(255), true);
             }
             else
             {       
@@ -213,7 +214,7 @@ class Panel
                 var set = this.activePokemon.smogon_data.sets[this.activeGen.toString()][this.activeSet].data
                 var tier = this.activePokemon.smogon_data.sets[this.activeGen.toString()][this.activeSet].tier
                 console.log(set)
-                instant_text(set.name + " ("+(this.activeSet + 1).toString()+"/"+set_count.toString()+") - " + tier, fontSize/1.5, w*0.5, set_text_y, w/2, color(255), true);
+                instant_text(set.name + " ("+(this.activeSet + 1).toString()+"/"+set_count.toString()+") - " + tier, fontSize/1.5, w*0.5, set_text_y, color(255), true);
                 var left_side = 0
                 //EVs (Don't Exist in Gen 1)
                 if(this.activeGen == 1)
@@ -256,7 +257,7 @@ class Panel
                         var held_text_x = (left_side + w)/2
                         var held_text_y = set.moves.length*(this.height/8) + this.height/4 + this.y + textAscent()/2
                         var held_text = "Held Item: " + set.item
-                        instant_text(held_text, fontSize/2, held_text_x, held_text_y, w/2, color(150, 150, 0), true);
+                        instant_text(held_text, fontSize/2, held_text_x, held_text_y, color(200, 200, 0), true);
                         var item_id = set.item.toLowerCase().replace(" ","-");
                         if(item_id in item_atlas)
                         {
@@ -268,20 +269,24 @@ class Panel
                 }
                 if(this.activeGen >= 3)
                 {
-                    if(set.ability != null){instant_text("Ability: " + set.ability, fontSize/2, (left_side + w)/2, (set.moves.length+0.75)*(this.height/8) + this.height/4 + this.y + textAscent()/2, w/2, color(150, 150, 0), true);}
+                    if(set.ability != null){instant_text("Ability: " + set.ability, fontSize/2, (left_side + w)/2, (set.moves.length+0.75)*(this.height/8) + this.height/4 + this.y + textAscent()/2, color(150, 150, 0), true);}
                 }
                 
                 
                 for(var i = 0; i < set.moves.length; i++)
                 {
                     textSize(fontSize)
-                    instant_text(set.moves[i], fontSize, (left_side + w)/2, i*(this.height/8) + this.height/4 + this.y, w/2, color(255), true);
+                    instant_text(set.moves[i], fontSize, (left_side + w)/2, i*(this.height/8) + this.height/4 + this.y, color(255), true);
                 }
                 
             }
         }
         else if(this.activeTab == 2)
         {
+            if(this.activePokemon.loaded_misc == false)
+            {
+                this.activePokemon.loadMiscData();
+            }
             textSize(fontSize/2)
             var head_y = this.y + fontSize
             this.lastGenButton.pos.y = head_y + textAscent()/2
@@ -300,7 +305,89 @@ class Panel
             {
                 this.activeGen = 9
             }
-            instant_text("Smogon Battle Stats for " + displayName + " (6v6 Singles, Gen " + this.activeGen.toString() + ")", fontSize/2, w*0.5, head_y, w/2, color(255), true);
+            instant_text("Smogon Battle Stats for " + displayName + " (6v6 Singles, Gen " + this.activeGen.toString() + ")", fontSize/2, w*0.5, head_y, color(255), true);
+            if(this.activeGen.toString() in this.activePokemon.smogon_data.misc_stats)
+            {
+                var data_stats = this.activePokemon.smogon_data.misc_stats[this.activeGen.toString()]
+                var data_points = []
+                //Item Usage
+                if(Object.keys(data_stats['moves']).length > 0){data_points.push('moves');}
+                if(Object.keys(data_stats['teammates']).length > 0){data_points.push('teammates');}
+                if(Object.keys(data_stats['counters']).length > 0){data_points.push('counters');}
+                if(this.activeGen >= 2)
+                {
+                    if(Object.keys(data_stats['items']).length > 0){data_points.push('items');}
+                }
+                if(this.activeGen >= 3)150, 14
+                {
+                    if(Object.keys(data_stats['abilities']).length > 0){data_points.push('abilities');}
+                }
+                if(this.activeGen >= 4)
+                {
+                    if(Object.keys(data_stats['spreads']).length > 0){data_points.push('spreads');}
+                }
+                for(var i = 0; i < data_points.length; i++)
+                {
+                    var label = data_points[i];
+                    var section_width = w/data_points.length;
+                    var section_height = this.height - head_y
+                    
+                    if(label in data_stats)
+                    {
+                        console.log("found " + label)
+                        var data = data_stats[label]
+                        textSize(fontSize/2)
+                        instant_text(titleCase(label), fontSize/2, section_width*(2*i + 1)/2, head_y + textAscent(fontSize/2)*3, color(255), true);
+                        var r = 0;
+                        for(var point in data)
+                        {
+                            var bar_value = data[point]
+                            if(label == 'counters')
+                            {
+                                bar_value = data[point][2]
+                            }
+                            if(bar_value < 0.1){continue;}
+                            var head = point.toString() + ": "
+                            
+                            if(point.length >= 18)
+                            {
+                                textSize(fontSize/3)
+                                var tx = section_width*(2*i + 1)/2 - textWidth(head)/2
+                                textSize(fontSize/2)
+                                var ty = head_y + (textAscent(fontSize/2)*(4+r) + textAscent(fontSize/2)*(5.25+r))/2 
+                                instant_text(head, fontSize/3, tx, ty, color(255), true);
+                            }
+                            else
+                            {
+                                textSize(fontSize/2)
+                                instant_text(head, fontSize/2, section_width*(2*i + 1)/2 - textWidth(head)/2, head_y + textAscent(fontSize/2)*(4+r), color(255), true);
+                            }
+                            textSize(fontSize/2)
+                            
+                            var display_data = parseFloat(bar_value.toFixed(2));
+                            textSize(fontSize/2)
+                            var bar_x = section_width*(2*i + 1)/2
+                            var bar_h = fontSize/2
+                            var bar_y =  head_y + textAscent(fontSize/2)*(4+r) + bar_h*1.5
+                            var bar_w = bar_value*section_width*0.9/2
+                            fill(255)
+                            rect(bar_x, bar_y, bar_w, bar_h, 0);
+                            var data_text = Math.round(display_data*100).toString() + "%"
+                            if(textWidth(data_text) < bar_w)
+                            {
+                                buffer_text(data_text, fontSize/3, (2*bar_x + bar_w)/2, (2*bar_y + bar_h)/2 - bar_h*1.25, color(0, 0, 0), true);
+                            }
+                            r++;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                textSize(fontSize)
+                instant_text("No Data", fontSize, w*0.5, this.y + this.height/2 - textAscent()/2, color(255), true);
+            }
+            
         }
 
 
@@ -323,22 +410,25 @@ class Panel
             var overY = mouseY > tabY && mouseY < tabY + tabHeight
             var over = overX && overY
             fill(40, 40, 40)
-            rect(tabX, tabY, tabWidth, tabHeight, 10)
-            noSmooth()
-            if(i+1 != this.displayed_form)
+            if(this.activeTab != 2)
             {
-                image(iconForm.img, icon_x, icon_y, iconSize, iconSize);
-                if(clicked && over)
+                rect(tabX, tabY, tabWidth, tabHeight, 10)
+                noSmooth()
+                if(i+1 != this.displayed_form)
                 {
-                    this.displayed_form = i + 1
+                    image(iconForm.img, icon_x, icon_y, iconSize, iconSize);
+                    if(clicked && over)
+                    {
+                        this.displayed_form = i + 1
+                    }
                 }
-            }
-            else
-            {
-                image(this.activePokemon.img[0], icon_x, icon_y, iconSize, iconSize);
-                if(clicked && over)
+                else
                 {
-                    this.displayed_form = 0
+                    image(this.activePokemon.img[0], icon_x, icon_y, iconSize, iconSize);
+                    if(clicked && over)
+                    {
+                        this.displayed_form = 0
+                    }
                 }
             }
         }
