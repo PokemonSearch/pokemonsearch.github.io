@@ -250,17 +250,20 @@ class Panel
                 }
                 if(this.activeGen >= 2)
                 {
-                    textSize(fontSize)
-                    var held_text_x = (left_side + w)/2
-                    var held_text_y = set.moves.length*(this.height/8) + this.height/4 + this.y + textAscent()/2
-                    var held_text = "Held Item: " + set.item
-                    instant_text(held_text, fontSize/2, held_text_x, held_text_y, w/2, color(150, 150, 0), true);
-                    var item_id = set.item.toLowerCase().replace(" ","-");
-                    if(item_id in item_atlas)
+                    if(set.item != null)
                     {
-                        var item_sprite = item_atlas[item_id];
-                        noSmooth();
-                        image(item_sprite, held_text_x + textWidth(held_text)/2, held_text_y + textAscent(fontSize/2)/2 + fontSize/4 + Math.sin((totalTime/(200*Math.PI)))*2.5 - 2.5, fontSize, fontSize);
+                        textSize(fontSize)
+                        var held_text_x = (left_side + w)/2
+                        var held_text_y = set.moves.length*(this.height/8) + this.height/4 + this.y + textAscent()/2
+                        var held_text = "Held Item: " + set.item
+                        instant_text(held_text, fontSize/2, held_text_x, held_text_y, w/2, color(150, 150, 0), true);
+                        var item_id = set.item.toLowerCase().replace(" ","-");
+                        if(item_id in item_atlas)
+                        {
+                            var item_sprite = item_atlas[item_id];
+                            noSmooth();
+                            image(item_sprite, held_text_x + textWidth(held_text)/2, held_text_y + textAscent(fontSize/2)/2 + fontSize/4 + Math.sin((totalTime/(200*Math.PI)))*2.5 - 2.5, fontSize, fontSize);
+                        }
                     }
                 }
                 if(this.activeGen >= 3)
