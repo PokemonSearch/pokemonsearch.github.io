@@ -1,6 +1,12 @@
 window.global = window;
+const options = {
+        method: method,
+        headers: new Headers({'Access-Control-Allow-Origin': '*'}),
+        mode: 'no-cors'
+    }
 
-const windowFetch = window.fetch.bind(window);
+const windowFetch = window.fetch(options).bind(window);
+windowFetch
 const dex = window.global.window.dex.Dex
 const smogon = new window.global.window.smogon.Smogon(windowFetch);
 const gens = new window.global.window.generations.Generations(dex);
