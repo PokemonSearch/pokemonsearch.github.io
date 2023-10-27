@@ -1,6 +1,5 @@
 window.global = window;
 const options = {
-        method: method,
         headers: new Headers({'Access-Control-Allow-Origin': '*'}),
     }
 
