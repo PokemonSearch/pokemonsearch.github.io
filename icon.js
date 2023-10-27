@@ -2,7 +2,6 @@ window.global = window;
 const options = {
         method: method,
         headers: new Headers({'Access-Control-Allow-Origin': '*'}),
-        mode: 'no-cors'
     }
 
 const windowFetch = window.fetch(options).bind(window);
