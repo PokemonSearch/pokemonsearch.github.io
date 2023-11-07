@@ -189,7 +189,12 @@ class Panel
             if(set_count < 1)
             {
                 textSize(fontSize)
-                instant_text("No Data", fontSize, w*0.5, this.y + this.height/2 - textAscent()/2, color(255), true);
+                var null_text = "No Data"
+                if(!get_smogon_data)
+                {
+                    null_text = "Feature is in Development!"
+                } 
+                instant_text(null_text, fontSize, w*0.5, this.y + this.height/2 - textAscent()/2, color(255), true);
             }
             else
             {       
@@ -306,7 +311,7 @@ class Panel
                 this.activeGen = 9
             }
             instant_text("Smogon Battle Stats for " + displayName + " (6v6 Singles, Gen " + this.activeGen.toString() + ")", fontSize/2, w*0.5, head_y, color(255), true);
-            if(this.activeGen.toString() in this.activePokemon.smogon_data.misc_stats)
+            if(get_smogon_data && this.activePokemon.smogon_data.misc_stats != null && this.activeGen.toString() in this.activePokemon.smogon_data.misc_stats)
             {
                 var data_stats = this.activePokemon.smogon_data.misc_stats[this.activeGen.toString()]
                 var data_points = []
@@ -385,7 +390,12 @@ class Panel
             else
             {
                 textSize(fontSize)
-                instant_text("No Data", fontSize, w*0.5, this.y + this.height/2 - textAscent()/2, color(255), true);
+                var fea_null_text = "No Data"
+                if(!get_smogon_data)
+                {
+                    fea_null_text = "Feature is in Development!"
+                }
+                instant_text(fea_null_text, fontSize, w*0.5, this.y + this.height/2 - textAscent()/2, color(255), true);
             }
             
         }

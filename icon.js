@@ -3,12 +3,11 @@ const options = {
         headers: new Headers({'Access-Control-Allow-Origin': '*'}),
     }
 
-const windowFetch = window.fetch(options).bind(window);
-windowFetch
+const windowFetch = window.fetch.bind(window);
 const dex = window.global.window.dex.Dex
 const smogon = new window.global.window.smogon.Smogon(windowFetch);
 const gens = new window.global.window.generations.Generations(dex);
-
+const get_smogon_data = false;
 
 
 
@@ -81,10 +80,17 @@ class PokeIcon
         {
             try
             {
-                var misc_data = await smogon.stats(gens.get(i), this.name)
-                if(misc_data != undefined)
+                if(get_smogon_data)
                 {
-                    this.smogon_data.misc_stats[i.toString()] = misc_data
+                    var misc_data = await smogon.stats(gens.get(i), this.name)
+                    if(misc_data != undefined)
+                    {
+                        this.smogon_data.misc_stats[i.toString()] = misc_data
+                    }
+                }
+                else
+                {
+                    this.smogon_data.misc_stats[i.toString()] = null
                 }
             }
             catch
@@ -110,25 +116,29 @@ class PokeIcon
         {
             var genid = "gen"+(i).toString()
             this.smogon_data.sets[i.toString()] = []
-            for(var t = 0; t < smogon_tiers[genid].length; t++)
+            if(get_smogon_data)
             {
-                var tiername = genid + smogon_tiers[genid][t]
-                var full_data = await smogon.sets(gens.get(i), this.name, tiername)
-                for(var d = 0; d < full_data.length; d++)
+                for(var t = 0; t < smogon_tiers[genid].length; t++)
                 {
-                    var set_obj = {
-                        tierid: tiername,
-                        tier: "Gen " + i.toString() + " " + smogon_tiers[genid][t].toUpperCase(),
-                        data: full_data[d]
-                    }
-                    if(set_obj.data.length != 0)
+                    var tiername = genid + smogon_tiers[genid][t]
+                    var full_data = await smogon.sets(gens.get(i), this.name, tiername)
+                    for(var d = 0; d < full_data.length; d++)
                     {
-                        this.smogon_data.sets[i.toString()].push(set_obj)
+                        var set_obj = {
+                            tierid: tiername,
+                            tier: "Gen " + i.toString() + " " + smogon_tiers[genid][t].toUpperCase(),
+                            data: full_data[d]
+                        }
+                        if(set_obj.data.length != 0)
+                        {
+                            this.smogon_data.sets[i.toString()].push(set_obj)
+                        }
                     }
                 }
             }
         }
         console.log(this.smogon_data)
+
         
         
         var v = Object.keys(this.spec_data.varieties)
