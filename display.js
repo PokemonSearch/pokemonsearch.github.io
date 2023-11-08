@@ -26,7 +26,7 @@ var sortButton;
 var loadButton;
 var helpButton;
 var cachedSearch = "";
-var sortMode = "OR";
+var sortMode = "AND";
 var loadMode = "SAFE";
 var selectedElement = null;
 var chosenIcons = [];
