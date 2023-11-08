@@ -2,7 +2,7 @@
 //const { Renderer } = require("../../../../.vscode/extensions/samplavigne.p5-vscode-1.2.12/p5types");
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-var version = "0.6.1.2"
+var version = "0.6.2.0"
 var w = window.innerWidth;
 var h = window.innerHeight;
 const MAX_ID = 1017; //[number of pokemon]
