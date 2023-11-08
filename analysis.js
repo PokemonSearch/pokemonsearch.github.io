@@ -120,6 +120,17 @@ function checkForms(icon, comp, str_value)
     }
 }
 
+function checkLearnset(icon, comp, str_value)
+{
+    if(comp == "=")
+    {
+        console.log(icon.data.moves)
+        return icon.data.moves.some(x => (x.move.name == str_value.toLowerCase() || x.move.name.replace("-"," ") == str_value.toLowerCase()));
+    }
+    return false;
+}
+
+
 function checkType(icon, comp, value)
 {
     if(comp == "=")
@@ -258,7 +269,9 @@ var operators =
     "gen":checkGeneration,
 
     "id":checkID,
-    "natdex":checkID
+    "natdex":checkID,
+
+    "learns":checkLearnset
 }
 
 var desc =
@@ -277,7 +290,8 @@ var desc =
     "checkCR":"The internally specified capture rate of a Pokemon (i.e: 3, 255, 37)",
     "checkForms":"The number of forms a Pokemon has (Including its default form)",
     "checkGeneration":"The generation of mainline Pokemon games that the Pokemon was introduced in (i.e: 1, 5, 8)",
-    "checkID":"The national dex number of the Pokemon (i.e: 1, 76, 904)"
+    "checkID":"The national dex number of the Pokemon (i.e: 1, 76, 904)",
+    "checkLearnset":"The learnset of a pokemon. Checks if equated move is in the learnset (i.e learns=rock-throw)"
 }
 
 function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */iconList)

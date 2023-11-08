@@ -2,8 +2,10 @@ import threading;
 import requests
 import os;
 import json
+import time
 
-
+pk_min = 1 #default is 1 (not 0)
+pk_count = 1017
 print(os.getcwd())
 def construct_sprites(pkmn, id):
     parent = os.getcwd()
@@ -14,6 +16,10 @@ def construct_sprites(pkmn, id):
     for cat in list(pkmn["sprites"]):
         url = pkmn["sprites"][cat]
         if url != None:
+            try:
+                url = url.replace("https://raw.githubusercontent.com/PokeAPI/sprites/master/https://raw.githubusercontent.com/PokeAPI/sprites/master/","https://raw.githubusercontent.com/PokeAPI/sprites/master/")
+            except:
+                print("replace failed for " + str(id))
             final_path = path
             if pkmn['is_default'] == False:
                 formName = pkmn['name'].replace(pkmn['species']['name']+"-","")
@@ -28,7 +34,7 @@ def construct_sprites(pkmn, id):
 
 def construct(dex_str):
     dex: dict = json.loads(dex_str)
-    for i in range(1, 1010+1):
+    for i in range(pk_min, pk_count+1):
         pList = dex["spe-"+str(i)]
         for p in pList:
             print("constructing " + p["name"])

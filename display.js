@@ -5,7 +5,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 var version = "0.6.1.2"
 var w = window.innerWidth;
 var h = window.innerHeight;
-const MAX_ID = 1010; //[number of pokemon]
+const MAX_ID = 1017; //[number of pokemon]
 var MAX_ITEMS = 2050;
 var fin = 0;
 var font_pixeloid;

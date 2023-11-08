@@ -8,6 +8,9 @@ calls: list[requests.Response] = []
 dex = {}
 done = 0
 
+
+
+
 def pokecall(url):
     return requests.get("https://pokeapi.co/api/v2/" + url)
 
@@ -70,11 +73,11 @@ if __name__ == "__main__":
     dex = {}
     calls: list[requests.Response] = []
 
-    for i in range(1, 1010 + 1):
+    for i in range(contruct_dex.pk_min, contruct_dex.pk_count + 1):
         t = threading.Thread(target=generalcall,args=[i])
         t.start()
     
-    while(done < 1010):
+    while(done < contruct_dex.pk_count - contruct_dex.pk_min + 1):
         time.sleep(0.1)
     
     jsonData = json.dumps(dex, indent=4)
