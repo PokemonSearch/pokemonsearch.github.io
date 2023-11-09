@@ -12,7 +12,8 @@ var pkmn_img;
 var score = 0;
 var tera_fire = false;
 var pressing = true;
-
+var miss_mode = false;
+var missed = true;
 var ui = [
     new label("Generating...", w/2, h/2, 72*gra_scale, [0, 0, 0, 1], 0)
 ]
@@ -40,6 +41,13 @@ var possible_natures = [
     'Lax'
 ]
 
+const queryString = window.location.search;
+console.log(queryString);
+if(queryString == "?realistic=true")
+{
+    miss_mode = true;
+}
+
 function setup()
 {
     console.log(w)
@@ -64,6 +72,7 @@ async function load()
     {
         try
         {
+            missed = false;
             chosen_pkmn = Math.round(Math.random()*1017)
             data = await fetch("../data/api/"+chosen_pkmn+"/api.json").then((response) => response.json());
             var pkmn_name = titleCase(data.species.name);
@@ -91,6 +100,12 @@ async function load()
                 dmg_perc = 100*((dmg_calc.defender.stats.hp - 1)/dmg_calc.defender.stats.hp);
             }
             calc_det = Math.abs(dmg_perc - 100);
+            if(miss_mode && Math.random() <= 0.1)
+            {
+                dmg_perc = 0;
+                missed = true;
+            }
+            
         }
         catch
         {
@@ -132,7 +147,7 @@ async function load()
     ui.push(new label("Is it a Guaranteed OHKO?", w/2, h/6, 48*gra_scale, [0, 0, 0, 1], 2))
     ui.push(new button("Yes", w/4  - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(125, 215, 125), [255, 255, 255], set_choice_yes, 2.25))
     ui.push(new button("No", 3*w/4 - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(255, 125, 125), [255, 255, 255], set_choice_no, 2.5))
-    
+    if(miss_mode){ui.push(new label("you asked for this jeudy", w/16, 0, 16*gra_scale, [0, 0, 0, 1], 1.25));}
     loaded = true;
     answered = false;
 }
@@ -164,7 +179,14 @@ async function process_choice()
         }
         if(dmg_perc < 30)
         {
-            ui.push(new label("not even a dent?", w/2, h/4 + 148*gra_scale, 14*gra_scale, [0, 0, 0, 1], 3))
+            if(missed)
+            {
+                ui.push(new label("it missed lol", w/2, h/4 + 148*gra_scale, 14*gra_scale, [0, 0, 0, 1], 3))
+            }
+            else
+            {
+                ui.push(new label("not even a dent?", w/2, h/4 + 148*gra_scale, 14*gra_scale, [0, 0, 0, 1], 3))
+            }
             extra_time = 1;
         }
         ui.push(ans_1)
@@ -182,13 +204,19 @@ async function process_choice()
     }
     else
     {
+        var extra_time = 0;
         var ans_1 = new label("Wrong...", w/2, h/4, 48*gra_scale, [100, 0, 0, 1], 0)
         var ans_2 = new label("Minimum Damage: " + Math.floor(dmg_perc) + "%", w/2, h/4 + 96*gra_scale, 24*gra_scale, [100, 0, 0, 1], 1)
+        if(missed)
+        {
+            ui.push(new label("it missed lol", w/2, h/4 + 148*gra_scale, 14*gra_scale, [0, 0, 0, 1], 3))
+            extra_time = 1;
+        }
         ui.push(ans_1)
         ui.push(ans_2)
         score = 0;
         difficulty = 1;
-        await sleep(1)
+        await sleep(1 + extra_time)
         alpha_gradient = -1;
         await sleep(1)
         alpha_gradient = 1;
