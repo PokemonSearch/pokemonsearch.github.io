@@ -121,7 +121,7 @@ async function load()
     ui.reverse();
     ui.pop();
     //add new ui
-    ui.push(new label(score, w/2, -h/12, 92*gra_scale, [0, 0, 0, 1], 0))
+    ui.push(new label(score, w/2, -h/32, 92*gra_scale, [0, 0, 0, 1], 0))
     ui.push(new label(desc[0], w/4, h/1.9 + 96*gra_scale, 16*gra_scale, [0, 0, 0, 1],0.5))
     ui.push(new dynamic_image(chiyu_img, w/4 - 128*gra_scale, h/2 - 128*gra_scale, 256*gra_scale, 256*gra_scale, 0.625));
     ui.push(new label("VS", w/2, h/2, 32*gra_scale, [0, 0, 0, 1], 0.75))
@@ -129,7 +129,7 @@ async function load()
     ui.push(new dynamic_image(pkmn_img, 3*w/4 - 128*gra_scale, h/2 - 128*gra_scale, 256*gra_scale, 256*gra_scale, 1.125));
     if(def_item != null){ui.push(new dynamic_image(item_img, 3*w/4 + 128*gra_scale - 64*gra_scale, h/2 - 128*gra_scale, 64*gra_scale, 64*gra_scale, 1.5));}
     ui.push(new label("(in sun)", w/2, h/2 + 64*gra_scale, 16*gra_scale, [0, 0, 0, 1], 1.25))
-    ui.push(new label("Is it a Guaranteed OHKO?", w/2, h/8, 48*gra_scale, [0, 0, 0, 1], 2))
+    ui.push(new label("Is it a Guaranteed OHKO?", w/2, h/6, 48*gra_scale, [0, 0, 0, 1], 2))
     ui.push(new button("Yes", w/4  - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(125, 215, 125), [255, 255, 255], set_choice_yes, 2.25))
     ui.push(new button("No", 3*w/4 - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(255, 125, 125), [255, 255, 255], set_choice_no, 2.5))
     
