@@ -214,22 +214,14 @@ function draw()
 
 function mouseClicked() 
 {
+    //clicked = true;
+}
+
+function touchStarted() 
+{
     clicked = true;
 }
 
-function mousePressed() 
-{
-    if(pressing = false)
-    {
-        pressing = true;
-        clicked = true;
-    }
-}
-
-function mouseReleased()
-{
-    pressing = false;
-}
 
 
 
