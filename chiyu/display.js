@@ -58,8 +58,9 @@ async function load()
 {
     loaded = false;
     var calc_det = Number.MAX_VALUE;
-    var lim = 100/(Math.pow(difficulty, 1 + difficulty/50));
-    while(!(calc_det < lim && calc_det > -lim*2) || isNaN(calc_det))
+    var lim = 100/(0.5 + difficulty/2);
+    lim = Math.max(lim, 10);
+    while(!(calc_det < lim) || isNaN(calc_det))
     {
         try
         {
@@ -90,7 +91,7 @@ async function load()
             {
                 dmg_perc = 100*((dmg_calc.defender.stats.hp - 1)/dmg_calc.defender.stats.hp);
             }
-            calc_det = (dmg_perc - 100);
+            calc_det = Math.abs(dmg_perc - 100);
             console.log(calc_det)
         }
         catch
