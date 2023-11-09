@@ -96,7 +96,7 @@ class button
         if(this.over())
         { 
             this.target_color = color(this.default_color.levels[0]/1.15,this.default_color.levels[1]/1.15,this.default_color.levels[2]/1.15)
-            if(clicked)
+            if(clicked && !answered)
             {
                 this.action();
             }

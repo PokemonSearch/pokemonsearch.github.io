@@ -51,6 +51,7 @@ function setup()
     textAlign(LEFT, TOP);
     load();
 }
+var answered = false;
 
 async function load()
 {
@@ -134,6 +135,7 @@ async function load()
     ui.push(new button("No", 3*w/4 - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(255, 125, 125), [255, 255, 255], set_choice_no, 2.5))
     
     loaded = true;
+    answered = false;
 }
 
 function set_choice_yes()
@@ -150,6 +152,7 @@ function set_choice_no()
 
 async function process_choice()
 {
+    answered = true;
     if(player_decision == correct_answer)
     {
         var extra_time = 0;
