@@ -16,8 +16,11 @@ window.global = window;
 const smogon = window.global.window.calc;
 const gen = smogon.Generations.get(9);
 var desc = []
+var gra_scale = w/1920
 function setup()
 {
+    console.log(w)
+    console.log(gra_scale)
     font_pixeloid = loadFont("../fonts/bw2 (t&i)(edited).ttf");
     textFont(font_pixeloid)
     canvas = createCanvas(w, h);
@@ -52,13 +55,13 @@ async function load()
     console.log(dmg_calc)
     desc = [
         "252+ SpA Choice Specs Beads of Ruin Chi-Yu Overheat",
-        dmg_calc.rawDesc.HPEVs + " / " + dmg_calc.rawDesc.defenseEVs + " " + dmg_calc.rawDesc.defenderItem + " " + dmg_calc.rawDesc.defenderName
+        dmg_calc.rawDesc.HPEVs + " / " + dmg_calc.rawDesc.defenseEVs + " " + dmg_calc.rawDesc.defenderItem + " (" + dmg_calc.defender.ability + ") " + dmg_calc.rawDesc.defenderName
     ]
-    ui.push(new label(desc[0], w/4, h/2 + 96, 16, [0, 0, 0, 1]))
-    ui.push(new label("VS", w/2, h/2, 32, [0, 0, 0, 1], 1))
-    ui.push(new label(desc[1], 3*w/4, h/2 + 96, 16, [0, 0, 0, 1], 2))
-    ui.push(new label("(in sun)", w/2, h/2 + 64, 16, [0, 0, 0, 1], 3))
-    ui.push(new label("Is it a Guaranteed OHKO?: " + Math.floor(dmg_perc) + "%", w/2, h/8, 48, [0, 0, 0, 1], 4))
+    ui.push(new label(desc[0], w/4, h/2 + 96*gra_scale, 16*gra_scale, [0, 0, 0, 1]))
+    ui.push(new label("VS", w/2, h/2, 32*gra_scale, [0, 0, 0, 1], 1))
+    ui.push(new label(desc[1], 3*w/4, h/2 + 96*gra_scale, 16*gra_scale, [0, 0, 0, 1], 2))
+    ui.push(new label("(in sun)", w/2, h/2 + 64*gra_scale, 16*gra_scale, [0, 0, 0, 1], 3))
+    ui.push(new label("Is it a Guaranteed OHKO?: " + Math.floor(dmg_perc) + "%", w/2, h/8, 48*gra_scale, [0, 0, 0, 1], 4))
     
     loaded = true;
 }
@@ -74,9 +77,9 @@ function draw()
     {
         noSmooth();
         tint(255, ui[0].externalAlpha);
-        image(chiyu_img, w/4 - 128, h/2 - 128, 256, 256);
+        image(chiyu_img, w/4 - 128*gra_scale, h/2 - 128*gra_scale, 256*gra_scale, 256*gra_scale);
         tint(255, ui[2].externalAlpha);
-        image(pkmn_img, 3*w/4 - 128, h/2 - 128, 256, 256);
+        image(pkmn_img, 3*w/4 - 128*gra_scale, h/2 - 128*gra_scale, 256*gra_scale, 256*gra_scale);
         tint(255);
     }
 
