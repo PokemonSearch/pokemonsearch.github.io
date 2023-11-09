@@ -222,6 +222,11 @@ function touchStarted()
     clicked = true;
 }
 
+function mousePressed()
+{
+    clicked = true;
+}
+
 
 
 
