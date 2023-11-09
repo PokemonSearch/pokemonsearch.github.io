@@ -11,6 +11,7 @@ var chiyu_img;
 var pkmn_img;
 var score = 0;
 var tera_fire = false;
+var pressing = true;
 
 var ui = [
     new label("Generating...", w/2, h/2, 72*gra_scale, [0, 0, 0, 1], 0)
@@ -218,7 +219,16 @@ function mouseClicked()
 
 function mousePressed() 
 {
-    dragging = true;
+    if(pressing = false)
+    {
+        pressing = true;
+        clicked = true;
+    }
+}
+
+function mouseReleased()
+{
+    pressing = false;
 }
 
 
