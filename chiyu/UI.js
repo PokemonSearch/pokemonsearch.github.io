@@ -100,7 +100,6 @@ class button
             {
                 this.action();
             }
-            console.log(this.color);
         }
         else
         {

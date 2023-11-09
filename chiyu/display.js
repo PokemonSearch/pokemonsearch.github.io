@@ -10,6 +10,7 @@ var loaded = false;
 var chiyu_img;
 var pkmn_img;
 var score = 0;
+var tera_fire = false;
 
 var ui = [
     new label("Generating...", w/2, h/2, 72*gra_scale, [0, 0, 0, 1], 0)
@@ -56,31 +57,45 @@ async function load()
     loaded = false;
     var calc_det = Number.MAX_VALUE;
     var lim = 100/(Math.pow(difficulty, 1 + difficulty/50));
-    while(calc_det > lim || isNaN(calc_det))
+    while(!(calc_det < lim && calc_det > -lim*2) || isNaN(calc_det))
     {
-        chosen_pkmn = Math.round(Math.random()*1017)
-        data = await fetch("../data/api/"+chosen_pkmn+"/api.json").then((response) => response.json());
-        var pkmn_name = titleCase(data.species.name);
-        var set = {
-            item: randomElement(possible_items),
-            nature: randomElement(possible_natures),
-            evs: {hp: 252, spd: 252}
+        try
+        {
+            chosen_pkmn = Math.round(Math.random()*1017)
+            data = await fetch("../data/api/"+chosen_pkmn+"/api.json").then((response) => response.json());
+            var pkmn_name = titleCase(data.species.name);
+            console.log(pkmn_name);
+            var set = {
+                item: randomElement(possible_items),
+                nature: randomElement(possible_natures),
+                evs: {hp: 252, spd: 252}
+            }
+            var chiyu_set = {
+                item: 'Choice Specs',
+                nature: 'Modest',
+                evs: {spa: 252},
+                teraType: 'Fire'
+            }
+        
+            chiyu_img = loadImage("../data/sprites/1004/front_default.png");
+            pkmn_img = loadImage("../data/sprites/"+chosen_pkmn+"/front_default.png");
+        
+            var chi_yu = new smogon.Pokemon(gen, 'Chi-Yu', chiyu_set)
+            var pokemon_1 = new smogon.Pokemon(gen, pkmn_name, set)
+            dmg_calc = smogon.calculate(gen, chi_yu, pokemon_1, new smogon.Move(gen, "Overheat"), new smogon.Field({weather:'Sun'}))
+            dmg_perc = 100*(dmg_calc.damage[0]/dmg_calc.defender.stats.hp);
+            if(dmg_calc.defender.ability == "Sturdy" && dmg_perc >= 100)
+            {
+                dmg_perc = 100*((dmg_calc.defender.stats.hp - 1)/dmg_calc.defender.stats.hp);
+            }
+            calc_det = (dmg_perc - 100);
+            console.log(calc_det)
         }
-        var chiyu_set = {
-            item: 'Choice Specs',
-            nature: 'Modest',
-            evs: {spa: 252}
+        catch
+        {
+            console.log("failed");
         }
-    
-        chiyu_img = loadImage("../data/sprites/1004/front_default.png");
-        pkmn_img = loadImage("../data/sprites/"+chosen_pkmn+"/front_default.png");
-    
-        var chi_yu = new smogon.Pokemon(gen, 'Chi-Yu', {chiyu_set})
-        var pokemon_1 = new smogon.Pokemon(gen, pkmn_name, set)
-        dmg_calc = smogon.calculate(gen, chi_yu, pokemon_1, new smogon.Move(gen, "Overheat"), new smogon.Field({weather:'Sun'}))
-        dmg_perc = 100*(dmg_calc.damage[0]/dmg_calc.defender.stats.hp);
-        calc_det = Math.abs(dmg_perc - 100);
-        console.log(calc_det)
+
     }
 
     correct_answer = 0;
@@ -99,7 +114,7 @@ async function load()
         item_img = loadImage("../data/items/sprites/"+internal_name+"/"+internal_name+".png");
     }
     desc = [
-        "252+ SpA Choice Specs Beads of Ruin Chi-Yu Overheat",
+        "252+ SpA Choice Specs Beads of Ruin Tera Fire Chi-Yu Overheat",
         dmg_calc.rawDesc.HPEVs + " / " + dmg_calc.rawDesc.defenseEVs + item_desc + " (" + dmg_calc.defender.ability + ") " + dmg_calc.rawDesc.defenderName
     ]
     //get rid of the "generating" ui label
@@ -140,7 +155,7 @@ async function process_choice()
         var extra_time = 0;
         var ans_1 = new label("Correct!", w/2, h/4, 48*gra_scale, [0, 100, 0, 1], 0)
         var ans_2 = new label("Minimum Damage: " + Math.floor(dmg_perc) + "%", w/2, h/4 + 96*gra_scale, 24*gra_scale, [0, 100, 0, 1], 1)
-        if(dmg_perc > 140)
+        if(dmg_perc > 160)
         {
             ui.push(new label("very balanced pokemon", w/2, h/4 + 148*gra_scale, 14*gra_scale, [0, 0, 0, 1], 3))
             extra_time = 1;
