@@ -2,6 +2,7 @@
   "dependencies": {
     "@pkmn/dex": "^0.7.49",
     "@pkmn/smogon": "^0.3.4",
+    "@smogon/calc": "^0.8.1",
     "buffer": "^6.0.3",
     "cors-anywhere": "^0.4.4",
     "emailjs-mime-parser": "^2.0.7",
