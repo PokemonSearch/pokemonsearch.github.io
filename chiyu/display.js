@@ -67,7 +67,6 @@ async function load()
             chosen_pkmn = Math.round(Math.random()*1017)
             data = await fetch("../data/api/"+chosen_pkmn+"/api.json").then((response) => response.json());
             var pkmn_name = titleCase(data.species.name);
-            console.log(pkmn_name);
             var set = {
                 item: randomElement(possible_items),
                 nature: randomElement(possible_natures),
@@ -92,7 +91,6 @@ async function load()
                 dmg_perc = 100*((dmg_calc.defender.stats.hp - 1)/dmg_calc.defender.stats.hp);
             }
             calc_det = Math.abs(dmg_perc - 100);
-            console.log(calc_det)
         }
         catch
         {
@@ -106,7 +104,6 @@ async function load()
     {
         correct_answer = 1;
     }
-    console.log(dmg_calc)
     var def_item = dmg_calc.rawDesc.defenderItem
     var item_img = null;
     var item_desc = ""
