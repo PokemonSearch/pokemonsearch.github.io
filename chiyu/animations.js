@@ -99,3 +99,50 @@ function getBerryResistType(berry) {
       return undefined;
     }
   }
+//From Bundle
+function getHazards(gen, defender, defenderSide) {
+    var damage = 0;
+    var texts = [];
+    if (defender.hasItem('Heavy-Duty Boots')) {
+        return { damage: damage, texts: texts };
+    }
+    if (defenderSide.isSR && !defender.hasAbility('Magic Guard', 'Mountaineer')) {
+        var rockType = gen.types.get('rock');
+        var effectiveness = rockType.effectiveness[defender.types[0]] *
+            (defender.types[1] ? rockType.effectiveness[defender.types[1]] : 1);
+        damage += Math.floor((effectiveness * defender.maxHP()) / 8);
+        texts.push('Stealth Rock');
+    }
+    if (defenderSide.steelsurge && !defender.hasAbility('Magic Guard', 'Mountaineer')) {
+        var steelType = gen.types.get('steel');
+        var effectiveness = steelType.effectiveness[defender.types[0]] *
+            (defender.types[1] ? steelType.effectiveness[defender.types[1]] : 1);
+        damage += Math.floor((effectiveness * defender.maxHP()) / 8);
+        texts.push('Steelsurge');
+    }
+    if (!defender.hasType('Flying') &&
+        !defender.hasAbility('Magic Guard', 'Levitate') &&
+        !defender.hasItem('Air Balloon')) {
+        if (defenderSide.spikes === 1) {
+            damage += Math.floor(defender.maxHP() / 8);
+            if (gen.num === 2) {
+                texts.push('Spikes');
+            }
+            else {
+                texts.push('1 layer of Spikes');
+            }
+        }
+        else if (defenderSide.spikes === 2) {
+            damage += Math.floor(defender.maxHP() / 6);
+            texts.push('2 layers of Spikes');
+        }
+        else if (defenderSide.spikes === 3) {
+            damage += Math.floor(defender.maxHP() / 4);
+            texts.push('3 layers of Spikes');
+        }
+    }
+    if (isNaN(damage)) {
+        damage = 0;
+    }
+    return { damage: damage, texts: texts };
+}
