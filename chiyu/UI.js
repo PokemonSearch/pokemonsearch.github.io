@@ -67,7 +67,7 @@ class dynamic_image
 
 class button
 {
-    constructor(txt, x, y, width, height, default_color, text_color, action, time_offset = 0)
+    constructor(txt, x, y, width, height, default_color, text_color, action, time_offset = 0, check_answered = false)
     {
         this.selected = false;
         this.action = action;
@@ -85,6 +85,8 @@ class button
         this.text = txt;
         this.lifetime = -time_offset;
         this.externalAlpha = 0;
+        this.was_pressed = false;
+        this.check_answered = check_answered;
     }
 
     render()
@@ -93,11 +95,12 @@ class button
         alpha = Math.max(0, alpha)
         this.externalAlpha = alpha*255;
 
-        if(this.over())
+        if(this.over() && !this.was_pressed)
         { 
             this.target_color = color(this.default_color.levels[0]/1.15,this.default_color.levels[1]/1.15,this.default_color.levels[2]/1.15)
-            if(clicked && !answered)
+            if(clicked && !this.was_pressed && ((this.check_answered && !answered) || !this.check_answered))
             {
+                this.was_pressed = true;
                 this.action();
             }
         }

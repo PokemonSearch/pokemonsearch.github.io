@@ -13,6 +13,7 @@ var score = 0;
 var tera_fire = false;
 var pressing = true;
 var miss_mode = false;
+var pause_mode = false;
 var missed = true;
 var ui = [
     new label("Generating...", w/2, h/2, 72*gra_scale, [0, 0, 0, 1], 0)
@@ -43,13 +44,16 @@ var possible_natures = [
 
 
 
-const queryString = window.location.search;
+const queryString = window.location.search.split("?");
 console.log(queryString);
-if(queryString == "?realistic=true")
+if(queryString.includes("realistic=true"))
 {
     miss_mode = true;
 }
-
+if(queryString.includes("pause"))
+{
+    pause_mode = true;
+}
 function setup()
 {
     console.log(w)
@@ -191,8 +195,8 @@ async function load()
     if(dmg_calc.rawDesc.defenseEVs == "252- SpD"){ui.push(new label("SpD Lowering Nature", 3*w/4 + 128*gra_scale + 64*gra_scale, h/2 + 64*gra_scale, 20*gra_scale, [100, 100, 200, 1], 1.625));}
     ui.push(new label("(in sun)", w/2, h/2 + 64*gra_scale, 16*gra_scale, [0, 0, 0, 1], 1.25))
     ui.push(new label("Is it a Guaranteed OHKO?", w/2, h/6, 48*gra_scale, [0, 0, 0, 1], 2))
-    ui.push(new button("Yes", w/4  - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(125, 215, 125), [255, 255, 255], set_choice_yes, 2.25))
-    ui.push(new button("No", 3*w/4 - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(255, 125, 125), [255, 255, 255], set_choice_no, 2.5))
+    ui.push(new button("Yes", w/4  - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(125, 215, 125), [255, 255, 255], set_choice_yes, 2.25, true))
+    ui.push(new button("No", 3*w/4 - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(255, 125, 125), [255, 255, 255], set_choice_no, 2.5, true))
     if(miss_mode){ui.push(new label("you asked for this jeudy", w/16, 0, 16*gra_scale, [0, 0, 0, 1], 1.25));}
     loaded = true;
     answered = false;
@@ -208,6 +212,17 @@ function set_choice_no()
 {
     player_decision = 0;
     process_choice();
+}
+
+async function continue_game()
+{
+    alpha_gradient = -1;
+    await sleep(1)
+    alpha_gradient = 1;
+    ui = [
+        new label("Generating...", w/2, h/2, 72*gra_scale, [0, 0, 0, 1], 3)
+    ]
+    load();
 }
 
 async function process_choice()
@@ -239,14 +254,21 @@ async function process_choice()
         ui.push(ans_2)
         difficulty++;
         score++;
-        await sleep(1 + extra_time)
-        alpha_gradient = -1;
-        await sleep(1)
-        alpha_gradient = 1;
-        ui = [
-            new label("Generating...", w/2, h/2, 72*gra_scale, [0, 0, 0, 1], 3)
-        ]
-        load();
+        if(!pause_mode)
+        {
+            await sleep(1 + extra_time)
+            alpha_gradient = -1;
+            await sleep(1)
+            alpha_gradient = 1;
+            ui = [
+                new label("Generating...", w/2, h/2, 72*gra_scale, [0, 0, 0, 1], 3)
+            ]
+            load();
+        }
+        else
+        {
+            ui.push(new button("Next", w/2  - 512*gra_scale/2, h/2 - 32*gra_scale, 512*gra_scale, 32*gra_scale, color(125, 125, 125), [255, 255, 255], continue_game, 3));
+        }
     }
     else
     {
@@ -262,14 +284,21 @@ async function process_choice()
         ui.push(ans_2)
         score = 0;
         difficulty = 1;
-        await sleep(1 + extra_time)
-        alpha_gradient = -1;
-        await sleep(1)
-        alpha_gradient = 1;
-        ui = [
-            new label("Generating...", w/2, h/2, 72*gra_scale, [0, 0, 0, 1], 3)
-        ]
-        load();
+        if(!pause_mode)
+        {
+            await sleep(1 + extra_time)
+            alpha_gradient = -1;
+            await sleep(1)
+            alpha_gradient = 1;
+            ui = [
+                new label("Generating...", w/2, h/2, 72*gra_scale, [0, 0, 0, 1], 3)
+            ]
+            load();
+        }
+        else
+        {
+            ui.push(new button("Next", w/2  - 512*gra_scale/2, h/2 - 32*gra_scale, 512*gra_scale, 32*gra_scale, color(125, 125, 125), [255, 255, 255], continue_game, 3));
+        }
     }
 }
 
