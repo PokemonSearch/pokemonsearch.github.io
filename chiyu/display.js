@@ -79,7 +79,6 @@ async function load()
             traced = false;
             missed = false;
             chosen_pkmn = Math.round(Math.random()*1017)
-            chosen_pkmn = 233
             data = await fetch("../data/api/"+chosen_pkmn+"/api.json").then((response) => response.json());
             var pkmn_name = titleCase(data.species.name);
             var set = {
