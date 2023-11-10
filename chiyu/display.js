@@ -79,6 +79,7 @@ async function load()
             traced = false;
             missed = false;
             chosen_pkmn = Math.round(Math.random()*1017)
+            chosen_pkmn = 3
             data = await fetch("../data/api/"+chosen_pkmn+"/api.json").then((response) => response.json());
             var pkmn_name = titleCase(data.species.name);
             var set = {
@@ -107,10 +108,6 @@ async function load()
             }
             dmg_calc = smogon.calculate(gen, chi_yu, pokemon_1, new smogon.Move(gen, "Overheat"), new smogon.Field({weather:'Sun'}))
             dmg_perc = 100*(dmg_calc.damage[0]/dmg_calc.defender.stats.hp);
-            if(getBerryResistType(dmg_calc.defender.item) == dmg_calc.move.type)
-            {
-                dmg_perc /= 2;
-            }
             if(dmg_calc.defender.ability == "Sturdy" && dmg_perc >= 100)
             {
                 dmg_perc = 100*((dmg_calc.defender.stats.hp - 1)/dmg_calc.defender.stats.hp);
@@ -140,10 +137,6 @@ async function load()
         correct_answer = 1;
     }
     var def_item = dmg_calc.rawDesc.defenderItem
-    if(dmg_calc.defender.item.includes("Berry"))
-    {
-        def_item = dmg_calc.defender.item;
-    }
     var item_img = null;
     var item_desc = ""
     if(def_item != null)
