@@ -26,7 +26,7 @@ var gra_scale = w/1920
 var player_decision = -1;
 var correct_answer = -1;
 var difficulty = 1;
-
+var traced = false;
 var possible_items = [
     'Assault Vest',
     'Eviolite',
@@ -76,8 +76,10 @@ async function load()
     {
         try
         {
+            traced = false;
             missed = false;
             chosen_pkmn = Math.round(Math.random()*1017)
+            chosen_pkmn = 233
             data = await fetch("../data/api/"+chosen_pkmn+"/api.json").then((response) => response.json());
             var pkmn_name = titleCase(data.species.name);
             var set = {
@@ -99,6 +101,11 @@ async function load()
         
             var chi_yu = new smogon.Pokemon(gen, 'Chi-Yu', chiyu_set)
             var pokemon_1 = new smogon.Pokemon(gen, pkmn_name, set)
+            if(pokemon_1.ability == "Trace")
+            {
+                pokemon_1.ability = chi_yu.ability;
+                traced = true;
+            }
             dmg_calc = smogon.calculate(gen, chi_yu, pokemon_1, new smogon.Move(gen, "Overheat"), new smogon.Field({weather:'Sun'}))
             dmg_perc = 100*(dmg_calc.damage[0]/dmg_calc.defender.stats.hp);
             if(getBerryResistType(dmg_calc.defender.item) == dmg_calc.move.type)
@@ -146,9 +153,16 @@ async function load()
         var internal_name = def_item.toLowerCase().replace(" ", "-");
         item_img = loadImage("../data/items/sprites/"+internal_name+"/"+internal_name+".png");
     }
+
+    def_ability = dmg_calc.defender.ability;
+    if(traced)
+    {
+        def_ability = "Trace"
+    }
+
     desc = [
         "252+ SpA Choice Specs Beads of Ruin Tera Fire Chi-Yu Overheat",
-        dmg_calc.rawDesc.HPEVs + " / " + dmg_calc.rawDesc.defenseEVs + item_desc + " (" + dmg_calc.defender.ability + ") " + dmg_calc.rawDesc.defenderName
+        dmg_calc.rawDesc.HPEVs + " / " + dmg_calc.rawDesc.defenseEVs + item_desc + " (" + def_ability + ") " + dmg_calc.rawDesc.defenderName
     ]
     //get rid of the "generating" ui label
     ui.reverse();
