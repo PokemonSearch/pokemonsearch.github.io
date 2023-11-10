@@ -29,8 +29,7 @@ var difficulty = 1;
 var traced = false;
 var possible_items = [
     'Assault Vest',
-    'Eviolite',
-    'Occa Berry'
+    'Eviolite'
 ]
 
 
