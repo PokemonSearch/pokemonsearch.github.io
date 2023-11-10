@@ -71,6 +71,7 @@ async function load()
     var lim = 200/(0.5 + difficulty/2);
     if(difficulty > 6){lim /= 2;}
     lim = Math.max(lim, 10);
+
     while(!(calc_det < lim) || isNaN(calc_det))
     {
         try
@@ -79,14 +80,35 @@ async function load()
             missed = false;
             chosen_pkmn = Math.round(Math.random()*1017)
             data = await fetch("../data/api/"+chosen_pkmn+"/api.json").then((response) => response.json());
+            console.log(data)
             var pkmn_name = titleCase(data.species.name);
+            var item_pool = [...possible_items]
+            var t1 = data.types[0];
+            var t2 = data.types[1];
+            var weakness = 1;
+            if(t2 != null)
+            {
+                console.log(t1.type.name.toUpperCase())
+                console.log(t2.type.name.toUpperCase())
+                weakness = getFireWeakness(t1.type.name.toUpperCase())*getFireWeakness(t2.type.name.toUpperCase());
+            }
+            else
+            {
+                weakness = getFireWeakness(t1.type.name.toUpperCase());
+            }
+            if(weakness >= 2)
+            {
+                item_pool.push('Occa Berry');
+            }
+
+
             var set = {
-                item: randomElement(possible_items),
+                item: randomElement(item_pool),
                 nature: randomElement(possible_natures),
                 evs: {hp: 252, spd: 252}
             }
+            
 
-            console.log(set);
             var chiyu_set = {
                 item: 'Choice Specs',
                 nature: 'Modest',

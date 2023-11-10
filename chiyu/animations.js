@@ -19,6 +19,42 @@ function sleep(s) {
     return new Promise(resolve => setTimeout(resolve, s*1000));
 }
 
+function getFireWeakness(type)
+{
+    var eff = 1;
+    switch(type)
+    {
+        case "GRASS":
+            eff = 2;
+            break;
+        case "ICE":
+            eff = 2;
+            break;
+        case "BUG":
+            eff = 2;
+            break;
+        case "STEEL":
+            eff = 2;
+            break;
+        case "FIRE":
+            eff = 0.5;
+            break;
+        case "WATER":
+            eff = 0.5;
+            break;
+        case "ROCK":
+            eff = 0.5;
+            break;
+        case "DRAGON":
+            eff = 0.5;
+            break;
+        default:
+            eff = 1;
+            break;
+    }
+    return eff;
+}
+
 
 //From Module File
 function getBerryResistType(berry) {
