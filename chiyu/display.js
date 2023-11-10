@@ -109,6 +109,10 @@ async function load()
             {
                 dmg_perc = 100*((dmg_calc.defender.stats.hp - 1)/dmg_calc.defender.stats.hp);
             }
+            if(dmg_calc.defender.ability == "Disguise")
+            {
+                dmg_perc = 0;
+            }
             calc_det = Math.abs(dmg_perc - 100);
             if(miss_mode && Math.random() <= 0.1)
             {
