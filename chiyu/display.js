@@ -30,6 +30,7 @@ var difficulty = 1;
 var possible_items = [
     'Assault Vest',
     'Eviolite',
+    'Occa Berry'
 ]
 
 
@@ -84,6 +85,8 @@ async function load()
                 nature: randomElement(possible_natures),
                 evs: {hp: 252, spd: 252}
             }
+
+            console.log(set);
             var chiyu_set = {
                 item: 'Choice Specs',
                 nature: 'Modest',
@@ -98,6 +101,10 @@ async function load()
             var pokemon_1 = new smogon.Pokemon(gen, pkmn_name, set)
             dmg_calc = smogon.calculate(gen, chi_yu, pokemon_1, new smogon.Move(gen, "Overheat"), new smogon.Field({weather:'Sun'}))
             dmg_perc = 100*(dmg_calc.damage[0]/dmg_calc.defender.stats.hp);
+            if(getBerryResistType(dmg_calc.defender.item) == dmg_calc.move.type)
+            {
+                dmg_perc /= 2;
+            }
             if(dmg_calc.defender.ability == "Sturdy" && dmg_perc >= 100)
             {
                 dmg_perc = 100*((dmg_calc.defender.stats.hp - 1)/dmg_calc.defender.stats.hp);
@@ -123,6 +130,10 @@ async function load()
         correct_answer = 1;
     }
     var def_item = dmg_calc.rawDesc.defenderItem
+    if(dmg_calc.defender.item.includes("Berry"))
+    {
+        def_item = dmg_calc.defender.item;
+    }
     var item_img = null;
     var item_desc = ""
     if(def_item != null)

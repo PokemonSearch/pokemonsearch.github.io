@@ -11,3 +11,4 @@ global.window.smogon = smogon
 global.window.LL_smogon = LL_smogon
 global.window.cors_anywhere = cors_anywhere
 global.window.calc = calc
+global.window.calc_items = calc_items
