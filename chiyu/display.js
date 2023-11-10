@@ -41,6 +41,8 @@ var possible_natures = [
     'Lax'
 ]
 
+
+
 const queryString = window.location.search;
 console.log(queryString);
 if(queryString == "?realistic=true")
@@ -66,7 +68,8 @@ async function load()
 {
     loaded = false;
     var calc_det = Number.MAX_VALUE;
-    var lim = 100/(0.5 + difficulty/2);
+    var lim = 200/(0.5 + difficulty/2);
+    if(difficulty > 6){lim /= 2;}
     lim = Math.max(lim, 10);
     while(!(calc_det < lim) || isNaN(calc_det))
     {
@@ -143,6 +146,8 @@ async function load()
     ui.push(new label(desc[1], 3*w/4, h/1.9 + 96*gra_scale, 16*gra_scale, [0, 0, 0, 1], 1))
     ui.push(new dynamic_image(pkmn_img, 3*w/4 - 128*gra_scale, h/2 - 128*gra_scale, 256*gra_scale, 256*gra_scale, 1.125));
     if(def_item != null){ui.push(new dynamic_image(item_img, 3*w/4 + 128*gra_scale - 64*gra_scale, h/2 - 128*gra_scale, 64*gra_scale, 64*gra_scale, 1.5));}
+    if(dmg_calc.rawDesc.defenseEVs == "252+ SpD"){ui.push(new label("SpD Boosting Nature", 3*w/4 + 128*gra_scale + 64*gra_scale, h/2 + 64*gra_scale, 20*gra_scale, [0, 100, 0, 1], 1.625));}
+    if(dmg_calc.rawDesc.defenseEVs == "252- SpD"){ui.push(new label("SpD Lowering Nature", 3*w/4 + 128*gra_scale + 64*gra_scale, h/2 + 64*gra_scale, 20*gra_scale, [100, 0, 0, 1], 1.625));}
     ui.push(new label("(in sun)", w/2, h/2 + 64*gra_scale, 16*gra_scale, [0, 0, 0, 1], 1.25))
     ui.push(new label("Is it a Guaranteed OHKO?", w/2, h/6, 48*gra_scale, [0, 0, 0, 1], 2))
     ui.push(new button("Yes", w/4  - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(125, 215, 125), [255, 255, 255], set_choice_yes, 2.25))
