@@ -87,7 +87,7 @@ else
     try
     {
         attacker_query = {
-            id: Math.round(Number(queryString[0].replace("%20"," "))),
+            id: queryString[0].replace("%20"," "),
             item: queryString[1].replace("%20"," "),
             ability: queryString[2].replace("%20"," "),
             nature: queryString[3].replace("%20"," "),
@@ -108,10 +108,7 @@ console.log(queryString);
 //sample query: ?445?Choice Band?Rough Skin?Adamant?0,252,0,0,0,252?31,31,31,31,31,31?Ground?Rain?Earthquake
 //sample 2: ?382?Choice%20Specs?Drizzle?Modest?0,252,0,0,0,252?31,31,31,31,31,31?Ground?Rain?Water%20Spout
 
-if(queryString.includes("realistic=true"))
-{
-    miss_mode = true;
-}
+
 if(queryString.includes("pause"))
 {
     pause_mode = true;
@@ -151,7 +148,13 @@ async function load_editor()
     var y_level = 0
     ui.push(new textbox(w/4 - 0.5*w/4, 40*gra_scale + dist_factor*gra_scale*32*y_level, w/4, gra_scale*32, "Pokemon: ", "", function(x) {
         var raw_text = x.text.replace(" ", "-").toLowerCase();
-        if(name_json.hasOwnProperty(raw_text)){editor_result.id = name_json[raw_text];}
+        if(name_json.hasOwnProperty(raw_text)){
+            editor_result.id = name_json[raw_text];
+        }
+        else
+        {
+            editor_result.id = null;
+        }
         try_compile();
     }));
 
@@ -267,22 +270,25 @@ async function try_compile()
     try
     {
         var comp_id = editor_result.id;
-        if(comp_id == null || comp_id == ''){return;}
+        if(comp_id == null || comp_id == ''){editor_result.result_ui.box.value("Invalid Settings"); return;}
         var comp_move = editor_result.move;
-        if(comp_move == null || comp_move == ''){return;}
+        if(comp_move == null || comp_move == ''){editor_result.result_ui.box.value("Invalid Settings"); return;}
         var comp_item = editor_result.item;
         if(comp_item == null || comp_item == ''){comp_item = 'None';}
         var comp_ability = editor_result.ability;
-        if(comp_ability == null || comp_ability == ''){return;}
+        if(comp_ability == null || comp_ability == ''){editor_result.result_ui.box.value("Invalid Settings"); return;}
         var comp_nature = editor_result.nature;
-        if(comp_nature == null || comp_nature == '' || comp_nature == 'None'){return;}
+        if(comp_nature == null || comp_nature == '' || comp_nature == 'None'){editor_result.result_ui.box.value("Invalid Settings"); return;}
         var comp_evs = editor_result.evs.HP + ","+editor_result.evs.Atk+","+editor_result.evs.Def+","+editor_result.evs.SpA+","+editor_result.evs.SpD+","+editor_result.evs.Spe;
         var comp_ivs = editor_result.ivs.HP + ","+editor_result.ivs.Atk+","+editor_result.ivs.Def+","+editor_result.ivs.SpA+","+editor_result.ivs.SpD+","+editor_result.ivs.Spe;
         var comp_tera = editor_result.tera;
         if(comp_tera == null || comp_tera == ''){comp_tera = 'None';}
         var comp_weather = editor_result.weather;
-        var comp_url = "jsdexdb.github.io/doesitohko/?"+comp_id+"?"+comp_item+"?"+comp_ability+"?"+comp_nature+"?"+comp_evs+"?"+comp_ivs+"?"+comp_tera+"?"+comp_weather+"?"+comp_move;
-        comp_url = comp_url.replace(" ","%20");
+        var comp_section = comp_id+"?"+comp_item+"?"+comp_ability+"?"+comp_nature+"?"+comp_evs+"?"+comp_ivs+"?"+comp_tera+"?"+comp_weather+"?"+comp_move;
+        comp_section = comp_section.replace(" ","%20");
+        var comp_url = "jsdexdb.github.io/doesitohko/?"+comp_section;
+        var high_level_valid = await high_level_test(comp_section);
+        if(!high_level_valid){editor_result.result_ui.box.value("Invalid Settings"); return;}
         editor_result.result_ui.box.value(comp_url);
     }
     catch
@@ -292,16 +298,58 @@ async function try_compile()
 
 }
 
-
-async function validity_preload()
+async function high_level_test(q_string)
 {
-    console.log('preloading');
     try
     {
-        attacker_pkmn = attacker_query.id;
-        attacker_data = await fetch("../data/api/"+attacker_pkmn+"/api.json").then((response) => response.json());
+        split_q_string = q_string.split("?");
+        attacker_query = {
+            id: split_q_string[0].replace("%20"," "),
+            item: split_q_string[1].replace("%20"," "),
+            ability: split_q_string[2].replace("%20"," "),
+            nature: split_q_string[3].replace("%20"," "),
+            evs: split_q_string[4].split(","),
+            ivs: split_q_string[5].split(","),
+            tera: split_q_string[6].replace("%20"," "),
+            weather: split_q_string[7].replace("%20"," "),
+            move: split_q_string[8].replace("%20"," "),   
+        }
+        var is_valid = await validity_preload(false);
+        if(is_valid)
+        {
+            return true;
+        }
+        else
+        {
+            console.log("failed");
+            return false;
+        }
+    }
+    catch
+    {
+        return false;
+    }
+}
+
+
+async function validity_preload(run_game = true)
+{
+    console.log('preloading');
+    valid = true;
+    valid_test: try
+    {
+        attacker_full = (""+attacker_query.id).split("/");
+        console.log(attacker_full)
+        attacker_pkmn = Math.round(Number(attacker_full[0]));
+        extra_data = "";
+        if(attacker_full.length > 1)
+        {
+            extra_data = "/"+attacker_full[1];
+        }
+        if(!run_game && isNaN(attacker_pkmn) || attacker_pkmn == 0){return false;}
+        attacker_data = await fetch("../data/api/"+attacker_pkmn+extra_data+"/api.json").then((response) => response.json());
         attacker_name = titleCase(attacker_data.species.name);
-        console.log("searching: " + "../data/api/"+attacker_pkmn+"/api.json")
+        console.log("searching: " + "../data/api/"+attacker_pkmn+extra_data+"/api.json")
         console.log(attacker_data)
         attacker_set = {
             item: attacker_query.item,
@@ -323,11 +371,11 @@ async function validity_preload()
                 spe:Number(attacker_query.ivs[5])
             },
             ability: attacker_query.ability,
-            tera: null
+            teraType: null
         }
         if(attacker_query.tera != "None")
         {
-            attacker_set.tera = attacker_query.tera;
+            attacker_set.teraType = attacker_query.tera;
         }
         attacker_move = new smogon.Move(gen, attacker_query.move);
         if(attacker_move == null || attacker_move.type == undefined)
@@ -335,30 +383,51 @@ async function validity_preload()
             valid = false;
         }
         console.log(attacker_move);
-        atk_img = loadImage("../data/sprites/"+attacker_pkmn+"/front_default.png");
-        pokemon_attacker = new smogon.Pokemon(gen, attacker_name, attacker_set);
+        if(run_game)
+        {
+            atk_img = loadImage("../data/sprites/"+attacker_pkmn+extra_data+"/front_default.png");
+        }
+        pokemon_attacker = new smogon.Pokemon(gen, attacker_name+extra_data.replace("/","-"), attacker_set);
         weather_text = "";
-
         if(attacker_query.weather != "Clear")
         {
             weather_text = attacker_query.weather;
         }
         console.log(pokemon_attacker);
     }
-    catch
+    catch(e)
     {
         valid = false;
+        console.log("invalid");
+        console.log(e);
+        if(!run_game){return false;}
     }
 
-    if(valid && (await test_calc()))
+    var final_test = await test_calc();
+    if(valid && final_test)
     {
-        load();
+        if(run_game)
+        {
+            load()
+        }
+        else
+        {
+            console.log("successful");
+            return true;
+        }
     }
     else
     {
         console.log('invalid');
-        ui.push(new label("Invalid Settings", w/2, 1.25*h/4, 72*gra_scale, [0, 0, 0, 1], 0));
-        ui.push(new label("Make sure you inputted the correct spelling...", w/2, 1.25*h/4 + 2.5*72*gra_scale, 24*gra_scale, [0, 0, 0, 1], 1));
+        if(run_game)
+        {
+            ui.push(new label("Invalid Settings", w/2, 1.25*h/4, 72*gra_scale, [0, 0, 0, 1], 0));
+            ui.push(new label("Make sure you inputted the correct spelling...", w/2, 1.25*h/4 + 2.5*72*gra_scale, 24*gra_scale, [0, 0, 0, 1], 1));
+        }
+        else
+        {
+            return false;
+        }
     }
 }
 
@@ -370,28 +439,23 @@ async function test_calc()
         haz_text = "";
         traced = false;
         missed = false;
-        defender_pkmn = Math.round(Math.random()*1017)
+        defender_pkmn = 1
         
         var defender_data = await fetch("../data/api/"+defender_pkmn+"/api.json").then((response) => response.json());
         
         console.log(attacker_data)
         var defender_name = titleCase(defender_data.species.name);
-        
-        var item_pool = [...possible_items]
-        if(hazard_mode){item_pool.push('Heavy-Duty Boots');}
 
         var ev_def = 0;
         var ev_spd = 0;
-        var ev_hp = 252*Math.round(Math.random());
-        if(attacker_move.category == 'Physical'){ev_def = 252*Math.round(Math.random());}
-        if(attacker_move.category == 'Special'){ev_spd = 252*Math.round(Math.random());}
+        var ev_hp = 1;
+        if(attacker_move.category == 'Physical'){ev_def = 1;}
+        if(attacker_move.category == 'Special'){ev_spd = 1;}
         var defender_set = {
-            item: randomElement(item_pool),
-            nature: randomElement(possible_natures),
+            item: 'Eviolite',
+            nature: 'Adamant',
             evs: {hp: ev_hp, def: ev_def, spd: ev_spd}
         }
-        
-        def_img = loadImage("../data/sprites/"+defender_pkmn+"/front_default.png");
     
         
         var pokemon_defender = new smogon.Pokemon(gen, defender_name, defender_set)
@@ -457,8 +521,9 @@ async function test_calc()
         }
         return true;
     }
-    catch
+    catch (e)
     {
+        console.log(e);
         return false;
     }
 }
@@ -525,7 +590,7 @@ async function load()
             var side_text = ""
             if(attacker_query.weather != "Clear")
             {
-                "(in " + weather_text+")";
+               side_text = "(in " + weather_text.toLowerCase()+")";
             }
             var spike_count = 0;
             var rocks = false;
@@ -632,9 +697,13 @@ async function load()
 
     var a_spe = dmg_calc.attacker.stats.spe
     var d_spe = dmg_calc.defender.stats.spe
-
+    var a_tera = "";
+    if(dmg_calc.attacker.teraType != undefined)
+    {
+        a_tera = "Tera " + dmg_calc.attacker.teraType + " "
+    }
     desc = [
-        dmg_calc.rawDesc.attackEVs + atk_item_desc + " (" + pokemon_attacker.ability + ") " + dmg_calc.rawDesc.attackerName + " (" + a_spe + " Spe) " + dmg_calc.move.name,
+        dmg_calc.rawDesc.attackEVs + atk_item_desc + " (" + pokemon_attacker.ability + ") " + a_tera + dmg_calc.rawDesc.attackerName + " (" + a_spe + " Spe) " + dmg_calc.move.name,
         dmg_calc.rawDesc.HPEVs + " / " + dmg_calc.rawDesc.defenseEVs + def_item_desc + " (" + def_ability + ") " + dmg_calc.rawDesc.defenderName + " (" + d_spe + " Spe)"
     ]
     //get rid of the "generating" ui label
@@ -655,7 +724,7 @@ async function load()
     ui.push(new label("Is it a Guaranteed OHKO?", w/2, h/6, 48*gra_scale, [0, 0, 0, 1], 2))
     ui.push(new button("Yes", w/4  - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(125, 215, 125), [255, 255, 255], set_choice_yes, 2.25, true))
     ui.push(new button("No", 3*w/4 - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(255, 125, 125), [255, 255, 255], set_choice_no, 2.5, true))
-    if(miss_mode){ui.push(new label("you asked for this jeudy", w/16, 0, 16*gra_scale, [0, 0, 0, 1], 1.25));}
+    if(miss_mode){ui.push(new label("you technically asked for this jeudy", w/16, 0, 16*gra_scale, [0, 0, 0, 1], 1.25));}
     loaded = true;
     answered = false;
 }
