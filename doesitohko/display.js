@@ -718,8 +718,10 @@ async function load()
     ui.push(new label(desc[1], 3*w/4, h/1.9 + 96*gra_scale, 16*gra_scale, [0, 0, 0, 1], 1))
     ui.push(new dynamic_image(def_img, 3*w/4 - 128*gra_scale, h/2 - 128*gra_scale, 256*gra_scale, 256*gra_scale, 1.125));
     if(def_item != null){ui.push(new dynamic_image(def_item_img, 3*w/4 + 128*gra_scale - 64*gra_scale, h/2 - 128*gra_scale, 64*gra_scale, 64*gra_scale, 1.5));}
-    if(dmg_calc.rawDesc.defenseEVs == "252+ SpD"){ui.push(new label("SpD Boosting Nature", 3*w/4 + 128*gra_scale + 64*gra_scale, h/2 + 64*gra_scale, 20*gra_scale, [200, 100, 100, 1], 1.625));}
-    if(dmg_calc.rawDesc.defenseEVs == "252- SpD"){ui.push(new label("SpD Lowering Nature", 3*w/4 + 128*gra_scale + 64*gra_scale, h/2 + 64*gra_scale, 20*gra_scale, [100, 100, 200, 1], 1.625));}
+    if(dmg_calc.rawDesc.defenseEVs == "252+ SpD" || dmg_calc.rawDesc.defenseEVs == "0+ SpD"){ui.push(new label("SpD Boosting Nature", 3*w/4 + 128*gra_scale + 64*gra_scale, h/2 + 64*gra_scale, 20*gra_scale, [200, 100, 100, 1], 1.625));}
+    if(dmg_calc.rawDesc.defenseEVs == "252- SpD" || dmg_calc.rawDesc.defenseEVs == "0- SpD"){ui.push(new label("SpD Lowering Nature", 3*w/4 + 128*gra_scale + 64*gra_scale, h/2 + 64*gra_scale, 20*gra_scale, [100, 100, 200, 1], 1.625));}
+    if(dmg_calc.rawDesc.defenseEVs == "252+ Def" || dmg_calc.rawDesc.defenseEVs == "0+ Def"){ui.push(new label("Def Boosting Nature", 3*w/4 + 128*gra_scale + 64*gra_scale, h/2 + 64*gra_scale, 20*gra_scale, [200, 100, 100, 1], 1.625));}
+    if(dmg_calc.rawDesc.defenseEVs == "252- Def" || dmg_calc.rawDesc.defenseEVs == "0- Def"){ui.push(new label("Def Lowering Nature", 3*w/4 + 128*gra_scale + 64*gra_scale, h/2 + 64*gra_scale, 20*gra_scale, [100, 100, 200, 1], 1.625));}
     ui.push(new label(side_text, w/2, h/2 + 64*gra_scale, 16*gra_scale, [0, 0, 0, 1], 1.25))
     ui.push(new label("Is it a Guaranteed OHKO?", w/2, h/6, 48*gra_scale, [0, 0, 0, 1], 2))
     ui.push(new button("Yes", w/4  - 512*gra_scale/2, h - h/4, 512*gra_scale, 64*gra_scale, color(125, 215, 125), [255, 255, 255], set_choice_yes, 2.25, true))
