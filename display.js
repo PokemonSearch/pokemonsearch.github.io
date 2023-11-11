@@ -48,6 +48,7 @@ var noSwipeTimer = 0.1;
 var ignoreSwipe = 0;
 var startTime = 0;
 var totalTime = 0;
+
 function setup()
 {
     startTime = new Date();
@@ -90,6 +91,8 @@ The list of available filters includes:
     }
 
 }
+
+
 
 function swapLoading()
 {
@@ -174,6 +177,8 @@ async function init()
             await delay(1)
         }
     }
+    console.log("name_dict:")
+    console.log(name_dict);
     analysis();
 }
 

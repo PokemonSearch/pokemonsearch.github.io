@@ -8,6 +8,7 @@ const dex = window.global.window.dex.Dex
 const smogon = new window.global.window.smogon.Smogon(windowFetch);
 const gens = new window.global.window.generations.Generations(dex);
 const get_smogon_data = false;
+var name_dict = {};
 
 
 
@@ -107,6 +108,7 @@ class PokeIcon
         this.data = response;
         this.spec_data = spec_response
         this.name = splitTitleCase(this.data.species.name);
+        name_dict[this.data.species.name] = this.ID+"";
         console.log(this.name);
         this.smogon_data = {
             sets: {},
@@ -160,6 +162,7 @@ class PokeIcon
                     img: a_img,
                     data: form_data_response
                 }
+                name_dict[fullName] = this.ID+"/"+formName;
                 this.forms.push(formObj)
             }
             else

@@ -128,3 +128,51 @@ class button
     }
 }
 
+class textbox
+{
+    constructor(x, y, width, height, title_label = "", default_text = "", callback = null)
+    {
+        this.selected = false;
+        this.pos = {x: x, y: y};
+        this.height = height;
+        this.width = width;
+        this.color = {r:200,g:200,b:200};
+        this.target_color = {r:255,g:255,b:255};
+        this.text = "";
+        this.box = createElement("input","hello");
+        this.box.show();
+        this.box.style("border-radius", "20px").style("padding-left",(20*(height/30))+"px").style("font-family","BlackWhite").style("font-size",(21*(height/30))+"px");
+        this.run_callback = true;
+        this.callback = callback;
+        this.last_text = "";
+        textSize(this.height)
+        this.box.value(default_text);
+        this.title_label = new label(title_label, this.pos.x - textWidth(title_label), this.pos.y - this.height*1.5, this.height, [0, 0, 0, 1], -1);
+        console.log(this.box.style("border-radius"))
+    }
+    
+    render()
+    {
+        this.box.position(this.pos.x, this.pos.y);
+        this.box.size(this.width - 20, this.height);
+
+        textSize(this.title_label.text_size);
+        this.title_label.x = this.pos.x - textWidth(this.title_label.text)/2;
+        this.title_label.y = this.pos.y - textAscent(this.title_label.text_size) - 5*this.height/30;
+        this.title_label.render();
+
+        this.text = this.box.value();
+        if(this.callback != null && this.run_callback && this.last_text != this.text)
+        {
+            this.last_text = this.text;
+            this.callback(this);
+        }
+    }
+
+    over()
+    {
+        var overX = mouseX > this.pos.x && mouseX < this.pos.x + this.width;
+        var overY = mouseY > this.pos.y && mouseY < this.pos.y + this.height;
+        return overX && overY;
+    }
+}
