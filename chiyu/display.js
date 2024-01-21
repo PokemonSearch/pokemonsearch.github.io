@@ -94,7 +94,6 @@ async function load()
             traced = false;
             missed = false;
             chosen_pkmn = Math.round(Math.random()*1025)
-            chosen_pkmn = 1017
             data_str = "../data/api/"+chosen_pkmn
             var spec_data = await fetch("../data/api/"+chosen_pkmn+"/species.json").then((response) => response.json());
             var variants = ["/"]
