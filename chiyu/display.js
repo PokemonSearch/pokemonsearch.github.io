@@ -84,7 +84,7 @@ async function load()
     var lim = 200/(0.5 + difficulty/2);
     if(difficulty > 6){lim /= 2;}
     lim = Math.max(lim, 10);
-    console.log(smogon)
+    console.log(smogon);
     while(!(calc_det < lim) || isNaN(calc_det))
     {
         try
@@ -93,9 +93,25 @@ async function load()
             haz_text = "";
             traced = false;
             missed = false;
-            chosen_pkmn = Math.round(Math.random()*1017)
-            data = await fetch("../data/api/"+chosen_pkmn+"/api.json").then((response) => response.json());
-            console.log(data)
+            chosen_pkmn = Math.round(Math.random()*1025)
+            chosen_pkmn = 1017
+            data_str = "../data/api/"+chosen_pkmn
+            var spec_data = await fetch("../data/api/"+chosen_pkmn+"/species.json").then((response) => response.json());
+            var variants = ["/"]
+            var form_names = [""];
+            if(spec_data.varieties != null)
+            {
+                for(var i = 1; i < spec_data.varieties.length; i++)
+                {
+                    var mon_name = spec_data.varieties[i].pokemon.name;
+                    variants.push("/"+mon_name.substring(mon_name.indexOf("-")+1)+"/");
+                    form_names.push(mon_name.substring(mon_name.indexOf("-")+1));
+                }
+            }
+            var chosen_variant = Math.round(Math.random()*(variants.length - 1));
+            var form_name = form_names[chosen_variant].replace("-mask","");
+            data_str += variants[chosen_variant];
+            data = await fetch(data_str+"api.json").then((response) => response.json());
             var pkmn_name = titleCase(data.species.name);
             var item_pool = [...possible_items]
             if(hazard_mode){item_pool.push('Heavy-Duty Boots');}
@@ -117,6 +133,10 @@ async function load()
                 item_pool.push('Occa Berry');
             }
 
+            if(data.name.endsWith('-mega') || data.name.endsWith('-mask') || data.name.endsWith('-primal') || data.name.endsWith('-origin') || data.name.endsWith('-ultra') || data.name.endsWith('-crowned') || data.name.startsWith('arceus-') || data.name.startsWith('silvally-'))
+            {
+                item_pool = [""];
+            }
 
             var set = {
                 item: randomElement(item_pool),
@@ -133,10 +153,10 @@ async function load()
             }
         
             chiyu_img = loadImage("../data/sprites/1004/front_default.png");
-            pkmn_img = loadImage("../data/sprites/"+chosen_pkmn+"/front_default.png");
+            pkmn_img = loadImage("../data/sprites/"+chosen_pkmn+"/"+form_names[chosen_variant]+"/front_default.png");
         
             var chi_yu = new smogon.Pokemon(gen, 'Chi-Yu', chiyu_set)
-            var pokemon_1 = new smogon.Pokemon(gen, pkmn_name, set)
+            var pokemon_1 = new smogon.Pokemon(gen, titleCase(data.name.replace("-mask","")), set)
             if(pokemon_1.ability == "Trace")
             {
                 pokemon_1.ability = chi_yu.ability;
@@ -172,10 +192,6 @@ async function load()
             }
             dmg_calc = smogon.calculate(gen, chi_yu, pokemon_1, new smogon.Move(gen, "Overheat"), new smogon.Field({weather:'Sun', defenderSide:side}));
             var dmg_haz = getHazards(gen, pokemon_1, side);
-            console.log(dmg_haz);
-            console.log(dmg_calc)
-            console.log('hazardless')
-            console.log(smogon.calculate(gen, chi_yu, pokemon_1, new smogon.Move(gen, "Overheat"), new smogon.Field({weather:'Sun'})))
             dmg_perc = 100*(dmg_calc.damage[0]/dmg_calc.defender.stats.hp);
             haz_perc = 100*(dmg_haz.damage/dmg_calc.defender.stats.hp);
             if(dmg_calc.defender.ability == "Sturdy" && dmg_perc >= 100 && haz_perc <= 0)
@@ -194,9 +210,9 @@ async function load()
             }
             
         }
-        catch
+        catch(e)
         {
-            console.log("failed");
+            console.error(e);
         }
 
     }
@@ -232,10 +248,14 @@ async function load()
     {
         def_ability = "Trace"
     }
-
+    var form_delim = "";
+    if(form_name != "")
+    {
+        form_delim = " ";
+    }
     desc = [
         "252+ SpA Choice Specs Beads of Ruin Tera Fire Chi-Yu Overheat",
-        dmg_calc.rawDesc.HPEVs + " / " + dmg_calc.rawDesc.defenseEVs + item_desc + " (" + def_ability + ") " + dmg_calc.rawDesc.defenderName
+        dmg_calc.rawDesc.HPEVs + " / " + dmg_calc.rawDesc.defenseEVs + item_desc + " (" + def_ability + ") " + titleCase(form_name.replace("-", " ")) + form_delim + pkmn_name
     ]
     //get rid of the "generating" ui label
     ui.reverse();

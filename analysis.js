@@ -297,6 +297,7 @@ var desc =
 function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */iconList)
 {
     arg = arg.toLowerCase();
+    console.log(iconList)
     var keys = Object.keys(operators).sort(function(a, b){return b.length - a.length;});
     var hasOperator = false;
     var operator = "";
@@ -321,11 +322,13 @@ function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */iconList)
             value = arg.substring((arg.indexOf(k) + k.length) + 1);
         }
     }
+    
     if(!hasOperator){operator = "name"; comparator = ""; value = arg;}
     var finalList = []
     for(var i = 0; i < iconList.length; i++)
     {
         if(!iconList[i].hasData){continue;}
+        
         if(operators[operator](iconList[i], comparator, value))
         {
             finalList.push(iconList[i]);
