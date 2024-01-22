@@ -87,9 +87,11 @@ async function load()
     lim = Math.max(lim, 10);
     console.log(smogon);
     var event_function = null
+    var choose_from = []
     if(event_dictionary[currentDate] != null)
     {
         event_function = event_dictionary[currentDate][0];
+        choose_from = event_dictionary[currentDate][2]
     }
     var event_tries = 5;
     while(!(calc_det < lim) || isNaN(calc_det))
@@ -101,10 +103,16 @@ async function load()
             traced = false;
             missed = false;
             chosen_pkmn = Math.round(Math.random()*1025)
+            console.log(choose_from)
+            if(choose_from.length > 0 && event_tries > 0)
+            {
+                chosen_pkmn = randomElement(choose_from)
+            }
             data_str = "../data/api/"+chosen_pkmn
             var spec_data = await fetch("../data/api/"+chosen_pkmn+"/species.json").then((response) => response.json());
             var variants = ["/"]
             var form_names = [""];
+            
             if(spec_data.varieties != null)
             {
                 for(var i = 1; i < spec_data.varieties.length; i++)
