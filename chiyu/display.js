@@ -91,6 +91,7 @@ async function load()
     {
         event_function = event_dictionary[currentDate][0];
     }
+    var event_tries = 50;
     while(!(calc_det < lim) || isNaN(calc_det))
     {
         try
@@ -121,12 +122,13 @@ async function load()
             var form_name = form_names[chosen_variant].replace("-mask","");
             data_str += variants[chosen_variant];
             data = await fetch(data_str+"api.json").then((response) => response.json());
-            if(event_function != null && difficulty < 5)
+            if(event_function != null && difficulty < 5 && event_tries > 0)
             {
                 if(!event_function(spec_data,data))
                 {
                     continue;
                 }
+                event_tries--;
             }
             var pkmn_name = titleCase(data.species.name);
             var item_pool = [...possible_items]
