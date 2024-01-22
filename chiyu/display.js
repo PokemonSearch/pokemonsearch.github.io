@@ -89,7 +89,7 @@ async function load()
     var event_function = null
     if(event_dictionary[currentDate] != null)
     {
-        event_function = event_dictionary[currentDate];
+        event_function = event_dictionary[currentDate][0];
     }
     while(!(calc_det < lim) || isNaN(calc_det))
     {
@@ -121,7 +121,7 @@ async function load()
             var form_name = form_names[chosen_variant].replace("-mask","");
             data_str += variants[chosen_variant];
             data = await fetch(data_str+"api.json").then((response) => response.json());
-            if(event_function != null)
+            if(event_function != null && difficulty < 5)
             {
                 if(!event_function(spec_data,data))
                 {
