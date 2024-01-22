@@ -91,7 +91,7 @@ async function load()
     {
         event_function = event_dictionary[currentDate][0];
     }
-    var event_tries = 20;
+    var event_tries = 5;
     while(!(calc_det < lim) || isNaN(calc_det))
     {
         try
