@@ -1,5 +1,6 @@
 
 
+const currentDate = new Date().toDateString();
 var font_pixeloid;
 var w = window.innerWidth;
 var h = window.innerHeight;
@@ -85,6 +86,11 @@ async function load()
     if(difficulty > 6){lim /= 2;}
     lim = Math.max(lim, 10);
     console.log(smogon);
+    var event_function = null
+    if(event_dictionary[currentDate] != null)
+    {
+        event_function = event_dictionary[currentDate];
+    }
     while(!(calc_det < lim) || isNaN(calc_det))
     {
         try
@@ -103,7 +109,7 @@ async function load()
                 for(var i = 1; i < spec_data.varieties.length; i++)
                 {
                     var mon_name = spec_data.varieties[i].pokemon.name;
-                    if(mon_name.includes("totem") == false && mon_name.includes("pikachu") == false && mon_name.includes("gmax") == false && mon_name.includes("pikachu") == false && mon_name.includes("eevee") == false)
+                    if(mon_name.includes("totem") == false && mon_name.includes("pikachu") == false && mon_name.includes("gmax") == false && mon_name.includes("pikachu") == false && mon_name.includes("eevee") == false && mon_name.includes("busted") == false)
                     {
                         variants.push("/"+mon_name.substring(mon_name.indexOf("-")+1)+"/");
                         form_names.push(mon_name.substring(mon_name.indexOf("-")+1));
@@ -115,6 +121,13 @@ async function load()
             var form_name = form_names[chosen_variant].replace("-mask","");
             data_str += variants[chosen_variant];
             data = await fetch(data_str+"api.json").then((response) => response.json());
+            if(event_function != null)
+            {
+                if(!event_function(spec_data,data))
+                {
+                    continue;
+                }
+            }
             var pkmn_name = titleCase(data.species.name);
             var item_pool = [...possible_items]
             if(hazard_mode){item_pool.push('Heavy-Duty Boots');}
