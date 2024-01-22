@@ -131,7 +131,7 @@ async function load()
             data_str += variants[chosen_variant];
             data = await fetch(data_str+"api.json").then((response) => response.json());
             console.log(data.name);
-            if(event_function != null && event_tries > 0)
+            if(event_function != null && event_tries > 0 && difficulty <= 5)
             {
                 console.log("tries: " + event_tries);
                 event_tries--;
