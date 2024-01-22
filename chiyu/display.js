@@ -292,7 +292,7 @@ async function load()
     //add new ui
     if(event_function != null)
     {
-        ui.push(new label("Ongiong Event: " + event_dictionary[currentDate][1], w/2, -h/64, 24*gra_scale, [0, 120, 120, 1], 0));
+        ui.push(new label("Ongoing Event: " + event_dictionary[currentDate][1], w/2, -h/64, 24*gra_scale, [0, 120, 120, 1], 0));
     }
     
     ui.push(new label(score, w/2, -h/32, 92*gra_scale, [0, 0, 0, 1], 0))
