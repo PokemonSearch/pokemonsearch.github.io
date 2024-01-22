@@ -122,7 +122,7 @@ async function load()
             var form_name = form_names[chosen_variant].replace("-mask","");
             data_str += variants[chosen_variant];
             data = await fetch(data_str+"api.json").then((response) => response.json());
-            if(event_function != null && difficulty < 5 && event_tries > 0)
+            if(event_function != null && event_tries > 0)
             {
                 if(!event_function(spec_data,data))
                 {
@@ -279,6 +279,11 @@ async function load()
     ui.reverse();
     ui.pop();
     //add new ui
+    if(event_function != null)
+    {
+        ui.push(new label("Ongiong Event: " + event_dictionary[currentDate][1], w/2, -h/64, 24*gra_scale, [0, 120, 120, 1], 0));
+    }
+    
     ui.push(new label(score, w/2, -h/32, 92*gra_scale, [0, 0, 0, 1], 0))
     ui.push(new label(desc[0], w/4, h/1.9 + 96*gra_scale, 16*gra_scale, [0, 0, 0, 1],0.5))
     ui.push(new dynamic_image(chiyu_img, w/4 - 128*gra_scale, h/2 - 128*gra_scale, 256*gra_scale, 256*gra_scale, 0.625));
