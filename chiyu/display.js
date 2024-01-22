@@ -91,7 +91,7 @@ async function load()
     {
         event_function = event_dictionary[currentDate][0];
     }
-    var event_tries = 5;
+    var event_tries = 20;
     while(!(calc_det < lim) || isNaN(calc_det))
     {
         try
@@ -110,7 +110,7 @@ async function load()
                 for(var i = 1; i < spec_data.varieties.length; i++)
                 {
                     var mon_name = spec_data.varieties[i].pokemon.name;
-                    if(mon_name.includes("totem") == false && mon_name.includes("pikachu") == false && mon_name.includes("gmax") == false && mon_name.includes("pikachu") == false && mon_name.includes("eevee") == false && mon_name.includes("busted") == false && mon_name.includes("cramorant") == false)
+                    if(mon_name.includes("totem") == false && mon_name.includes("pikachu") == false && mon_name.includes("gmax") == false && mon_name.includes("pikachu") == false && mon_name.includes("eevee") == false && mon_name.includes("busted") == false && mon_name.includes("cramorant") == false && !(mon_name.includes("10") && !mon_name.includes("power-construct")))
                     {
                         variants.push("/"+mon_name.substring(mon_name.indexOf("-")+1)+"/");
                         form_names.push(mon_name.substring(mon_name.indexOf("-")+1));
@@ -122,13 +122,16 @@ async function load()
             var form_name = form_names[chosen_variant].replace("-mask","");
             data_str += variants[chosen_variant];
             data = await fetch(data_str+"api.json").then((response) => response.json());
+            console.log(data.name);
             if(event_function != null && event_tries > 0)
             {
+                console.log("tries: " + event_tries);
+                event_tries--;
                 if(!event_function(spec_data,data))
                 {
                     continue;
                 }
-                event_tries--;
+                
             }
             var pkmn_name = titleCase(data.species.name);
             var item_pool = [...possible_items]
@@ -174,7 +177,7 @@ async function load()
             pkmn_img = loadImage("../data/sprites/"+chosen_pkmn+"/"+form_names[chosen_variant]+"/front_default.png");
         
             var chi_yu = new smogon.Pokemon(gen, 'Chi-Yu', chiyu_set)
-            var pokemon_1 = new smogon.Pokemon(gen, titleCase(data.name.replace("-mask","")), set)
+            var pokemon_1 = new smogon.Pokemon(gen, titleCase(data.name.replace("-mask","").replace("-breed","").replace("-50-power-construct", "-50%").replace("-10-power-construct", "-10%").replace("-female","-F").replace("-male","-M")), set)
             if(pokemon_1.ability == "Trace")
             {
                 pokemon_1.ability = chi_yu.ability;
