@@ -103,8 +103,12 @@ async function load()
                 for(var i = 1; i < spec_data.varieties.length; i++)
                 {
                     var mon_name = spec_data.varieties[i].pokemon.name;
-                    variants.push("/"+mon_name.substring(mon_name.indexOf("-")+1)+"/");
-                    form_names.push(mon_name.substring(mon_name.indexOf("-")+1));
+                    if(mon_name.includes("totem") == false && mon_name.includes("pikachu") == false && mon_name.includes("gmax") == false && mon_name.includes("pikachu") == false && mon_name.includes("eevee") == false)
+                    {
+                        variants.push("/"+mon_name.substring(mon_name.indexOf("-")+1)+"/");
+                        form_names.push(mon_name.substring(mon_name.indexOf("-")+1));
+                    }
+
                 }
             }
             var chosen_variant = Math.round(Math.random()*(variants.length - 1));
