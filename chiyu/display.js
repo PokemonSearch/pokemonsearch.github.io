@@ -88,10 +88,12 @@ async function load()
     console.log(smogon);
     var event_function = null
     var choose_from = []
+    var event_limit = -1;
     if(event_dictionary[currentDate] != null)
     {
         event_function = event_dictionary[currentDate][0];
-        choose_from = event_dictionary[currentDate][2]
+        event_limit = event_dictionary[currentDate][2];
+        choose_from = event_dictionary[currentDate][3];
     }
     var event_tries = 5;
     while(!(calc_det < lim) || isNaN(calc_det))
@@ -131,7 +133,7 @@ async function load()
             data_str += variants[chosen_variant];
             data = await fetch(data_str+"api.json").then((response) => response.json());
             console.log(data.name);
-            if(event_function != null && event_tries > 0 && difficulty <= 4)
+            if(event_function != null && event_tries > 0 && difficulty <= event_limit)
             {
                 console.log("tries: " + event_tries);
                 event_tries--;
@@ -290,15 +292,18 @@ async function load()
     ui.reverse();
     ui.pop();
     //add new ui
+    var h_pos = -h/64;
+    if(24*gra_scale-h/64 < 0)
+    {
+        h_pos = h-120*gra_scale
+    }
     if(event_function != null)
     {
-        var h_pos = -h/64;
-        if(24*gra_scale-h/64 < 0)
-        {
-            h_pos = h-120*gra_scale
-        }
         ui.push(new label("Ongoing Event: " + event_dictionary[currentDate][1], w/2, h_pos, 24*gra_scale, [0, 120, 120, 1], 0));
-        console.log(24*gra_scale-h/64)
+    }
+    else
+    {
+        ui.push(new label("Next Event starts on " + next_event, w/2, h_pos+8*gra_scale, 16*gra_scale, [120, 0, 120, 1], 0));
     }
     
     ui.push(new label(score, w/2, -h/32, 92*gra_scale, [0, 0, 0, 1], 0))
