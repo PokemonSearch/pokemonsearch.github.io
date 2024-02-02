@@ -89,6 +89,7 @@ async function load()
     var event_function = null
     var choose_from = []
     var event_limit = -1;
+    console.log(currentDate)
     if(event_dictionary[currentDate] != null)
     {
         event_function = event_dictionary[currentDate][0];
