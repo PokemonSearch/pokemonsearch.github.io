@@ -26,7 +26,7 @@ var event_dictionary =
 
     "Mon Feb 12 2024": [function(specdata, pokedata){
         return !pokedata.is_default;
-    }, "Higher Chance of Alternate Forms",4,mult_forms],
+    }, "Higher Chance of Alternate Forms",4,mult_forms]
 
 }
 
