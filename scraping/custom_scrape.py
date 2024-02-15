@@ -8,12 +8,16 @@ for ID in range(contruct_dex.pk_min, contruct_dex.pk_count+1):
     data = json.loads(data_io.read())
     data_io.close()
     
+    bst = 0
+    for s in range(6):
+        bst += data['stats'][s]['base_stat']
     type_list = [data['types'][0]['type']['name']]
+
     if len(data['types']) > 1:
         type_list.append(data['types'][1]['type']['name'])
     
-    print(type_list)
-    if 'water' in type_list:
+    
+    if bst>=600:
         output.append(ID)
         print(ID)
 
