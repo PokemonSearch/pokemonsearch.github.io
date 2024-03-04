@@ -131,7 +131,7 @@ class Panel
                 asp = Math.max(0, asp);
                 fill(255*(1 - sp), 255*sp, 50 + 205*asp);
                 var x = w*0.15
-                var y = this.y + this.height*0.25 + i*60*h/1080;
+                var y = this.y + this.height*0.25 + i*60;
                 rect(x*(1920/w), y, (this.stat_bars[i]**0.9)*4*(w/1920), 40, 10);
                 textSize(fontSize);
                 noSmooth();
