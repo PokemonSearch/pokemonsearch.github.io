@@ -65,7 +65,7 @@ function setup()
     helpButton.text = "?"
     sortButton = new Button(helpButton.pos.x - helpButton.width/2 - 100*w_scale, 15, 100*w_scale, 30*w_scale, color(100, 100, 120), color(255, 255, 255), toggleMode);
     loadButton = new Button(sortButton.pos.x + 50*w_scale, 15, 100*w_scale, 30*w_scale, color(100, 100, 120), color(255, 255, 255), swapLoading);
-    pokemonDisplay = new Panel(600);
+    pokemonDisplay = new Panel(600*h/1080);
     viewrange = [0, h];
     font_pixeloid = loadFont("fonts/bw2 (t&i)(edited).ttf")
     canvas = createCanvas(w, h);
