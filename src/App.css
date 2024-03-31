@@ -36,3 +36,24 @@
     transform: rotate(360deg);
   }
 }
+
+.load-style {
+  animation: fade-in 1s;
+}
+
+.load-style:hover {
+  transform: translateY(-5px);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 100;
+  }
+}
+
+@keyframes raise {
+  
+}
