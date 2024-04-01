@@ -1,3 +1,9 @@
+@font-face
+{
+  font-family: bwFont;
+  src: url('../public/fonts/bw2\ \(t&i\)\(edited\).ttf');
+}
+
 .App {
   text-align: center;
 }
@@ -37,13 +43,47 @@
   }
 }
 
-.load-style {
-  animation: fade-in 1s;
+.pokePanel {
+  position: fixed;
+  width: 100%;
+  height: 10%;
+  animation: fade-in 0.5s;
+  font-family: bwFont;
+  animation: dropIn 0.5s;
+  animation-fill-mode: forwards;
+  font-family: bwFont;
 }
 
-.load-style:hover {
-  transform: translateY(-5px);
+.load-style {
+  animation: fade-in 1s;
+  font-family: bwFont;
 }
+
+.hover-style {
+  animation: lower 0.1s ease-in-out;
+  animation-fill-mode: both;
+}
+
+.button-style {
+  animation: shrink 0.1s ease-out;
+  animation-fill-mode: both;
+}
+
+/* .load-style:hover {
+  transform: translateY(-5px);
+} */
+
+.hover-style:hover {
+  animation: raise 0.1s ease-in-out;
+  animation-fill-mode: both;
+}
+
+.button-style:hover {
+  animation: grow 0.1s ease-out;
+  animation-fill-mode: both;
+}
+
+
 
 @keyframes fade-in {
   from {
@@ -54,6 +94,49 @@
   }
 }
 
+@keyframes grow {
+  from {
+    scale: 100%;
+  }
+  to {
+    scale: 105%;
+  }
+}
+
+@keyframes shrink {
+  from {
+    scale: 105%;
+  }
+  to {
+    scale: 100%;
+  }
+}
+
 @keyframes raise {
-  
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes lower {
+  from {
+    transform: translateY(-5px);
+  }
+  to {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes dropIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0%);
+    opacity: 1;
+  }
 }
