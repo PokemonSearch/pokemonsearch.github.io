@@ -220,7 +220,7 @@ class MainComp extends React.Component {
     if(loaded_pkmn < MAX_PKMN)
     {
       loadingText = <div><h3 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"50%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"64px", margin: "auto",zIndex: 11}}>Loading: {Math.round(100*loaded_pkmn/MAX_PKMN)}%</h3>
-      <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"16px", margin: "auto",zIndex: 11}}>(If loading is stuck, reload the page)</h6></div>;
+      <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"16px", margin: "auto",zIndex: 11}}>(don't worry, it loads much, much faster the second time!)</h6></div>;
     }
 
     var toRender = [];
