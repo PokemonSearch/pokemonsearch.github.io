@@ -13,6 +13,8 @@ import {Text} from 'react-native';
 import { evaluateArgument } from './data_analysis';
 
 const MAX_PKMN = 1025;
+var loadingScale = 50;
+var currently_loading = 0;
 var loaded_pkmn = 0;
 var inline_loaded = 0;
 var startedLoading = false;
@@ -111,7 +113,41 @@ class MainComp extends React.Component {
   {
     currentQuery = x
   }
-
+  async get_data(i)
+  {
+    if(i > loaded_pkmn)
+    {
+      currently_loading++;
+      loaded_pkmn++;
+      var mon_data = await getData(i);
+      currently_loading--;
+      data.push(mon_data);
+      monForms[toString(mon_data[3])] = [];
+      var v = Object.keys(mon_data[1].varieties)
+      for(var iv = 1; iv < v.length; iv++)
+      {
+          if(Object.keys(form_whitelist).includes(toString(mon_data[3])) && !form_whitelist[mon_data[3]].includes(iv)){continue;}
+          /**@type String */
+          var fullName = mon_data[1].varieties[v[iv]]["pokemon"]["name"]
+          var formName = fullName.replace(mon_data[0]["species"]["name"] + "-","")
+          var path = "data/sprites/"+mon_data[3]+"/"+formName+"/front_default.png"
+          var form_data_response = await fetch("data/api/"+mon_data[3]+"/"+formName+"/api.json").then((response) => response.json())
+          var formObj = {
+              name: titleCase(formName),
+              img: path,
+              data: form_data_response
+          }
+          monForms[toString(data[3])].push(formObj);
+      }
+      
+      if(inSearch == false)
+      {
+        activeData = data;
+      }
+      
+      this.forceUpdate();
+    }
+  }
   async load_data()
   {
     if(startedLoading)
@@ -119,49 +155,20 @@ class MainComp extends React.Component {
       return;
     }
     startedLoading = true;
-    for(var i = 1; i <= MAX_PKMN; i++)
+    while(loaded_pkmn < MAX_PKMN)
     {
-      if(i > loaded_pkmn)
+      if(currently_loading < loadingScale)
       {
-        loaded_pkmn++;
-        var mon_data = await getData(i);
-        data.push(mon_data);
-        monForms[toString(mon_data[3])] = [];
-        var v = Object.keys(mon_data[1].varieties)
-        for(var iv = 1; iv < v.length; iv++)
-        {
-            if(Object.keys(form_whitelist).includes(toString(mon_data[3])) && !form_whitelist[mon_data[3]].includes(iv)){continue;}
-            /**@type String */
-            var fullName = mon_data[1].varieties[v[iv]]["pokemon"]["name"]
-            var formName = fullName.replace(mon_data[0]["species"]["name"] + "-","")
-            var path = "data/sprites/"+mon_data[3]+"/"+formName+"/front_default.png"
-            var form_data_response = await fetch("data/api/"+mon_data[3]+"/"+formName+"/api.json").then((response) => response.json())
-            var formObj = {
-                name: titleCase(formName),
-                img: path,
-                data: form_data_response
-            }
-            monForms[toString(data[3])].push(formObj);
-        }
-        
-        if(inSearch == false)
-        {
-          activeData = data;
-        }
-
-        this.forceUpdate();
-        if(activeMon.length > 0)
-        {
-          await delay(200);
-        }
-        else
-        {
-          await delay(2);
-        }
-        
+        this.get_data(loaded_pkmn+1);
       }
+      else
+      {
+        await delay(1);
+      }
+      
     }
   }
+  
 
   activateOverlay(ID)
   {
@@ -205,7 +212,6 @@ class MainComp extends React.Component {
 
   render()
   {
-    console.log("rendering!!!",this.props);
     if(startedLoading == false)
     {
       this.load_data();
