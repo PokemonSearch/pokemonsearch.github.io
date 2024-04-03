@@ -16,6 +16,7 @@ const MAX_PKMN = 1025;
 var loadingScale = 50;
 var currently_loading = 0;
 var loaded_pkmn = 0;
+var finished_loaded_pkmn = 0;
 var inline_loaded = 0;
 var startedLoading = false;
 var activeID = 1;
@@ -144,7 +145,7 @@ class MainComp extends React.Component {
       {
         activeData = data;
       }
-      
+      finished_loaded_pkmn++;
       this.forceUpdate();
     }
   }
@@ -155,9 +156,9 @@ class MainComp extends React.Component {
       return;
     }
     startedLoading = true;
-    while(loaded_pkmn < MAX_PKMN)
+    while(finished_loaded_pkmn < MAX_PKMN)
     {
-      if(currently_loading < loadingScale)
+      if(currently_loading < loadingScale && loaded_pkmn < MAX_PKMN)
       {
         this.get_data(loaded_pkmn+1);
       }
