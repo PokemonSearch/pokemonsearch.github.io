@@ -169,6 +169,7 @@ class MainComp extends React.Component {
       
     }
     data.sort(function(a, b){return a[3] - b[3]});
+    this.forceUpdate();
   }
   
 
