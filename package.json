@@ -1,6 +1,6 @@
 {
   "homepage": "http://pokemonsearch.github.io/",
-  "name": "jsdex-light",
+  "name": "pokesearch",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
