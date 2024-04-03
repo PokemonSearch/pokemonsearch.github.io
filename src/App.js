@@ -77,7 +77,7 @@ var form_whitelist =
         "1008": []
     }
 const delay = ms => new Promise(res => setTimeout(res, ms));
-
+var currentQuery = ""
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
   ...theme.typography.body2,
@@ -87,6 +87,226 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 
+
+class MainComp extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {loadedData: [],
+                  acMon: [],
+                  queryText: ''};
+  }
+
+  setLoad(x)
+  {
+    this.setState({queryText: x});
+  }
+
+  setMon(x)
+  {
+    this.setState({acMon: x})
+  }
+
+  setQuery(x)
+  {
+    currentQuery = x
+  }
+
+  async load_data()
+  {
+    if(startedLoading)
+    {
+      return;
+    }
+    startedLoading = true;
+    for(var i = 1; i <= MAX_PKMN; i++)
+    {
+      if(i > loaded_pkmn)
+      {
+        loaded_pkmn++;
+        var mon_data = await getData(i);
+        data.push(mon_data);
+        monForms[toString(mon_data[3])] = [];
+        var v = Object.keys(mon_data[1].varieties)
+        for(var iv = 1; iv < v.length; iv++)
+        {
+            if(Object.keys(form_whitelist).includes(toString(mon_data[3])) && !form_whitelist[mon_data[3]].includes(iv)){continue;}
+            /**@type String */
+            var fullName = mon_data[1].varieties[v[iv]]["pokemon"]["name"]
+            var formName = fullName.replace(mon_data[0]["species"]["name"] + "-","")
+            var path = "data/sprites/"+mon_data[3]+"/"+formName+"/front_default.png"
+            var form_data_response = await fetch("data/api/"+mon_data[3]+"/"+formName+"/api.json").then((response) => response.json())
+            var formObj = {
+                name: titleCase(formName),
+                img: path,
+                data: form_data_response
+            }
+            monForms[toString(data[3])].push(formObj);
+        }
+        
+        if(inSearch == false)
+        {
+          activeData = data;
+        }
+
+        this.forceUpdate();
+        if(activeMon.length > 0)
+        {
+          await delay(200);
+        }
+        else
+        {
+          await delay(2);
+        }
+        
+      }
+    }
+  }
+
+  activateOverlay(ID)
+  {
+    if(activeID == ID)
+    {
+      activeMon = [];
+      activeID = 0;
+      this.forceUpdate();
+      return;
+    }
+    if(activeMon.length == 0)
+    {
+      var p = document.querySelector('.pokePanel');
+      p.style.animationName = 'none';
+      requestAnimationFrame(() => {p.style.animationName = ''});
+    }
+    activeID = ID;
+    activeMon = [data[activeID-1]];
+    this.forceUpdate();
+  }
+
+  autosearch()
+  {
+    this.search(currentQuery);
+  }
+
+  search(query)
+  {
+    console.log("query:",query);
+    activeData = analysis(query);
+    if(activeData.length == data.length)
+    {
+      inSearch = false;
+    }
+    else
+    {
+      inSearch = true;
+    }
+    this.forceUpdate();
+  }
+
+  render()
+  {
+    console.log("rendering!!!",this.props);
+    if(startedLoading == false)
+    {
+      this.load_data();
+    }
+    
+    if(inline_loaded != data.length)
+    {
+      this.setLoad(data);
+      inline_loaded = data.length; 
+    }
+    var loadingText = <h3></h3>;
+    if(loaded_pkmn < MAX_PKMN)
+    {
+      loadingText = <div><h3 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"50%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"64px", margin: "auto",zIndex: 11}}>Loading: {Math.round(100*loaded_pkmn/MAX_PKMN)}%</h3>
+      <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"16px", margin: "auto",zIndex: 11}}>(If loading is stuck, reload the page)</h6></div>;
+    }
+
+    var toRender = [];
+    if(loaded_pkmn >= MAX_PKMN)
+    {
+      toRender = activeData;
+    }
+    var pokeiconPanel = <p></p>;
+    if(loaded_pkmn >= activeID && activeMon.length > 0)
+    {
+      var pokestats = []
+      var curmon = activeMon[0];
+      for(var i = 0; i < 6; i++)
+      {
+        pokestats.push(curmon[0].stats[i].base_stat);
+      }
+      /** @type {Array} */
+      var poketypes = curmon[0].types;
+      var pokeabilities = curmon[0].abilities;
+      pokeiconPanel = activeMon.map(mon => 
+        <Item style={{display:"grid"}}>
+          <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
+          
+          <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "33%"}} columns={3} row={1}>
+          <Grid item style={{width:"100%", alignSelf:"center", height: "200px"}}> 
+              <BarChart
+              yAxis={[{ scaleType: 'band', data: statNameVals, max:225}]}
+              xAxis={[{max:225}]}
+              series={[{data: pokestats, color: "purple"}]}
+              layout="horizontal"
+              />
+            </Grid>
+            
+            <Grid item>
+              <img src={process.env.PUBLIC_URL + mon[2]} style={{justifySelf: "center", imageRendering: "pixelated", width:"40%"}} alt="pokemon data"></img>
+              
+            </Grid>
+            <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"}>
+                <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "32px"}}><b>{splitTitleCase(mon[0].name)}</b></Text></h1>
+                <Text style={{fontSize: "12px", color:("black")}}>Type:</Text>
+                <br style={{display:"block"}}></br>
+                <div style={{margin:"10px", justifyContent: "center", display: "grid", gridAutoFlow: "column", columnWidth: "100%", gridGap: "10px", tableLayout: "fixed"}}>
+                {poketypes.map(ptype => 
+                  <Item style={{width: "100px", alignSelf:"center", backgroundColor:typeColours[ptype.type.name]}}><Text style={{fontSize: "20px", color:"white"}}>{titleCase(ptype.type.name) + "  "}</Text></Item>
+                  )}
+                </div>
+                <br></br>
+                <br></br>
+                <Text style={{fontSize: "12px", color:("black")}}>Abilities:</Text>
+                <br></br>
+                {pokeabilities.map(pabl => 
+                  <Text style={{fontSize: "18px", color:(pabl.is_hidden == false ? "black" : "#C8AE0F")}}>{splitTitleCase(pabl.ability.name) + "   "}</Text>
+                  )}
+            </Grid>
+          </Grid>
+      </Item>)
+    }
+
+    return (
+      <div className="App" style={{display:"grid"}}>
+        <form style={{display:"grid"}} onSubmit={event => {event.preventDefault(); this.autosearch()}}>
+        <input style={{borderRadius: "20px", zIndex:12, position: 'fixed', justifySelf: "center", borderWidth:"1px", width:"75%", margin:"auto", display:"block", transform: "translate(0px, 10px)", paddingLeft: "20px", fontFamily: "bwFont"}}
+        type="text" placeholder='enter search (i.e type=fire atk>120)' onChange={event => {this.setQuery(event.target.value)}}/>
+        </form>
+        {loadingText}
+        <div className='pokePanel' fontFamily={"bwFont"} style={{zIndex: 10}}>
+          {pokeiconPanel}
+        </div>
+        <br></br>
+        <h2 style={{textAlign: "center", fontFamily:"bwFont"}}>PokéSearch</h2>
+        <body>
+        <Grid container spacing={1}>
+          {toRender.map(poke => 
+          
+          <Grid item xs={4} sm={2} md={1.5} lg={1} key={poke[3]} className='hover-style'>
+            <Item style={{}} className='load-style' onClick={this.activateOverlay.bind(this, poke[3])}>
+            <img src={process.env.PUBLIC_URL + poke[2]} style={{alignContent: "center"}} alt="pokemon data"></img>
+            </Item>
+          </Grid>
+          )}
+        </Grid>
+        </body>
+      </div>
+    );
+  }
+}
 
 
 async function getData(ID)
@@ -193,20 +413,7 @@ function pokeSprite(ID)
   return "data/sprites/"+ID+"/front_default.png";
 }
 
-function search(query, dataProccer)
-{
-  console.log("query:",query);
-  activeData = analysis(query);
-  if(activeData.length == data.length)
-  {
-    inSearch = false;
-  }
-  else
-  {
-    inSearch = true;
-  }
-  dataProccer(activeData);
-}
+
 
 
 
@@ -250,212 +457,16 @@ render() {
 }
 }
 
-function activateOverlay(ID, updateMethod)
-{
-  if(activeID == ID)
-  {
-    activeMon = [];
-    activeID = 0;
-    updateMethod(activeMon);
-    return;
-  }
-  if(activeMon.length == 0)
-  {
-    var p = document.querySelector('.pokePanel');
-    p.style.animationName = 'none';
-    requestAnimationFrame(() => {p.style.animationName = ''});
-  }
-  activeID = ID;
-  activeMon = [data[activeID-1]];
-  updateMethod(activeMon);
-}
+
 
 var data = []
-async function load_data(updateLoader, lD)
+
+
+
+
+function App()
 {
-  if(startedLoading)
-  {
-    return;
-  }
-  startedLoading = true;
-  for(var i = 1; i <= MAX_PKMN; i++)
-  {
-    if(i > loaded_pkmn)
-    {
-      loaded_pkmn++;
-      var mon_data = await getData(i);
-      data.push(mon_data);
-      monForms[toString(mon_data[3])] = [];
-      var v = Object.keys(mon_data[1].varieties)
-      for(var i = 1; i < v.length; i++)
-        {
-            if(Object.keys(form_whitelist).includes(toString(mon_data[3])) && !form_whitelist[mon_data[3]].includes(i)){continue;}
-            /**@type String */
-            var fullName = mon_data[1].varieties[v[i]]["pokemon"]["name"]
-            var formName = fullName.replace(mon_data[0]["species"]["name"] + "-","")
-            var path = "data/sprites/"+mon_data[3]+"/"+formName+"/front_default.png"
-            var form_data_response = await fetch("data/api/"+mon_data[3]+"/"+formName+"/api.json").then((response) => response.json())
-            var formObj = {
-                name: titleCase(formName),
-                img: path,
-                data: form_data_response
-            }
-            monForms[toString(data[3])].push(formObj);
-        }
-      
-      if(inSearch == false)
-      {
-        activeData = data;
-      }
-      updateLoader(data);
-      if(activeMon.length > 0)
-      {
-        await delay(200);
-      }
-      else
-      {
-        await delay(2);
-      }
-      
-    }
-  }
-}
-
-class InputBox extends React.Component {
-  constructor(props) {
-    super(props);
-    this.reset();
-  }
-
-  reset() {
-    this.state = {
-      inputValue: ''
-    };
-  }
-
-  render() {
-    return (
-      // ...
-      <input style={{borderRadius: "20px", zIndex:12, position: 'fixed', justifySelf: "center", borderWidth:"1px", width:"75%", margin:"auto", display:"block", transform: "translate(0px, 10px)", paddingLeft: "20px"}}
-      type="search" onChange={event => search.bind(this, event.target.value)}/>
-      // ...
-    );
-  }
-
-  updateInputValue(evt) {
-    const val = evt.target.value;
-    // ...       
-    this.setState({
-      inputValue: val
-    });
-  }
-}
-
-
-function App() {
-/*   console.log(data);
-  var grid_rows = []
-  for(var i = 1; i <= MAX_PKMN; i++)
-  {
-    grid_rows.push(pokeIcon(i));
-  } */
-  const [loadedData, setLoad] = useState([]);
-  const [acMon, setMon] = useState([]);
-  const [queryText, setQuery] = useState('');
-  
-  load_data(setLoad, loadedData);
-  if(inline_loaded != data.length)
-  {
-    setLoad(data);
-    inline_loaded = data.length; 
-  }
-  var loadingText = <h3></h3>;
-  if(loaded_pkmn < MAX_PKMN)
-  {
-    loadingText = <div><h3 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"50%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"64px", margin: "auto",zIndex: 11}}>Loading: {Math.round(100*loaded_pkmn/MAX_PKMN)}%</h3>
-    <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"16px", margin: "auto",zIndex: 11}}>(If loading is stuck, reload the page)</h6></div>;
-  }
-
-  var toRender = []
-  if(loaded_pkmn >= MAX_PKMN)
-  {
-    toRender = activeData;
-  }
-  var pokeiconPanel = <p></p>;
-  if(loaded_pkmn >= activeID && activeMon.length > 0)
-  {
-    var pokestats = []
-    var curmon = activeMon[0];
-    for(var i = 0; i < 6; i++)
-    {
-      pokestats.push(curmon[0].stats[i].base_stat);
-    }
-    /** @type {Array} */
-    var poketypes = curmon[0].types;
-    var pokeabilities = curmon[0].abilities;
-    pokeiconPanel = activeMon.map(mon => 
-      <Item style={{display:"grid"}}>
-        <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={activateOverlay.bind(this, activeID, setMon)}>Close</Item>
-        
-        <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "33%"}} columns={3} row={1}>
-        <Grid item style={{width:"100%", alignSelf:"center", height: "200px"}}> 
-            <BarChart
-            yAxis={[{ scaleType: 'band', data: statNameVals, max:225}]}
-            xAxis={[{max:225}]}
-            series={[{data: pokestats, color: "purple"}]}
-            layout="horizontal"
-            />
-          </Grid>
-          
-          <Grid item>
-            <img src={process.env.PUBLIC_URL + mon[2]} style={{justifySelf: "center", imageRendering: "pixelated", width:"40%"}} alt="pokemon data"></img>
-            
-          </Grid>
-          <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"}>
-              <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "32px"}}><b>{splitTitleCase(mon[0].name)}</b></Text></h1>
-              <Text style={{fontSize: "12px", color:("black")}}>Type:</Text>
-              <br style={{display:"block"}}></br>
-              <div style={{margin:"10px", justifyContent: "center", display: "grid", gridAutoFlow: "column", columnWidth: "100%", gridGap: "10px", tableLayout: "fixed"}}>
-              {poketypes.map(ptype => 
-                <Item style={{width: "100px", alignSelf:"center", backgroundColor:typeColours[ptype.type.name]}}><Text style={{fontSize: "20px", color:"white"}}>{titleCase(ptype.type.name) + "  "}</Text></Item>
-                )}
-              </div>
-              <br></br>
-              <br></br>
-              <Text style={{fontSize: "12px", color:("black")}}>Abilities:</Text>
-              <br></br>
-              {pokeabilities.map(pabl => 
-                <Text style={{fontSize: "18px", color:(pabl.is_hidden == false ? "black" : "#C8AE0F")}}>{splitTitleCase(pabl.ability.name) + "   "}</Text>
-                )}
-          </Grid>
-        </Grid>
-     </Item>)
-  }
-
-  return (
-    <div className="App" style={{display:"grid"}}>
-      <input style={{borderRadius: "20px", zIndex:12, position: 'fixed', justifySelf: "center", borderWidth:"1px", width:"75%", margin:"auto", display:"block", transform: "translate(0px, 10px)", paddingLeft: "20px"}}
-      type="search" onChange={event => search(event.target.value, setLoad)}/>
-      {loadingText}
-      <div className='pokePanel' fontFamily={"bwFont"} style={{zIndex: 10}}>
-        {pokeiconPanel}
-      </div>
-      <br></br>
-      <h2 style={{textAlign: "center", fontFamily:"bwFont"}}>PokéSearch</h2>
-      <body>
-      <Grid container spacing={1}>
-        {toRender.map(poke => 
-        
-        <Grid item xs={4} sm={2} md={1.5} lg={1} key={poke[3]} className='hover-style'>
-          <Item style={{}} className='load-style' onClick={activateOverlay.bind(this, poke[3], setMon)}>
-          <img src={process.env.PUBLIC_URL + poke[2]} style={{alignContent: "center"}} alt="pokemon data"></img>
-          </Item>
-        </Grid>
-        )}
-      </Grid>
-      </body>
-    </div>
-  );
+  return(<MainComp/>);
 }
 
 
