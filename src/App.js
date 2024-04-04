@@ -326,7 +326,7 @@ class MainComp extends React.Component {
     if(loaded_pkmn < MAX_PKMN)
     {
       loadingText = <div><h3 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"50%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"50px", margin: "auto",zIndex: 11}}>Loading: {Math.round(100*loaded_pkmn/MAX_PKMN)}%</h3>
-      <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"16px", margin: "auto",zIndex: 11}}>(don't worry, it loads much, much faster the second time!)</h6></div>;
+      <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"0.8333333333vw", margin: "auto",zIndex: 11}}>(don't worry, it loads much, much faster the second time!)</h6></div>;
     }
 
     var toRender = [];
@@ -378,10 +378,10 @@ class MainComp extends React.Component {
             </Grid>
           
           <Grid item style={{alignContent:"center", alignSelf:"center", display:"flex-grid", textAlign:"center"}}> 
-                <Text style={{fontSize: "18px", color:("black")}}>Abilities:</Text>
+                <Text style={{fontSize: "0.9375vw", color:("black")}}>Abilities:</Text>
                 <br></br>
                 {pokeabilities.map(pabl => 
-                  <Text style={{fontSize: "18px", color:(pabl.is_hidden == false ? "black" : "#C8AE0F")}}>{splitTitleCase(pabl.ability.name) + "   "}</Text>
+                  <Text style={{fontSize: "0.9375vw", color:(pabl.is_hidden == false ? "black" : "#C8AE0F")}}>{splitTitleCase(pabl.ability.name) + "   "}</Text>
                   )}
             </Grid>
             
@@ -390,36 +390,36 @@ class MainComp extends React.Component {
               
             </Grid>
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"}>
-                <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "32px"}}><b>{splitTitleCase(mon[0].name)}</b></Text></h1>
+                <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{splitTitleCase(mon[0].name)}</b></Text></h1>
                 <Text style={{fontSize: "12px", color:("black")}}>Type:</Text>
                 <br style={{display:"block"}}></br>
-                <div style={{margin:"10px", justifyContent: "center", display: "grid", gridAutoFlow: "column", columnWidth: "100%", gridGap: "10px", tableLayout: "fixed"}}>
+                <div style={{margin:"0.5208333333vw", justifyContent: "center", display: "grid", gridAutoFlow: "column", columnWidth: "100%", gridGap: "0.5208333333vw", tableLayout: "fixed"}}>
                 {poketypes.map(ptype => 
-                  <Item style={{width: "120px", alignSelf:"center", backgroundColor:typeColours[ptype.type.name]}}><Text style={{fontSize: "20px", color:"white"}}>{titleCase(ptype.type.name) + "  "}</Text>
-                  <img height={"20px"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype.type.name+'.png'}/></Item>
+                  <Item style={{width: "6.25vw", alignSelf:"center", backgroundColor:typeColours[ptype.type.name]}}><Text style={{fontSize: "1.04166666667vw", color:"white"}}>{titleCase(ptype.type.name) + "  "}</Text>
+                  <img style={{height:"1.04166666667vw"}} src={process.env.PUBLIC_URL + 'typeicons/'+ptype.type.name+'.png'}/></Item>
                   )}
                 </div>
             </Grid>
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} textAlign={"center"}>
-                <Text style={{fontSize: "16px", color:("black")}}>Weaknesses:</Text>
+                <Text style={{fontSize: "0.8333333333vw", color:("black")}}>Weaknesses:</Text>
                 <br style={{display:"block"}}></br>
-                <Grid container style={{margin:"10px", justifyContent: "center", display: "flex-grid", columnWidth: "50%", gridGap: "10px", tableLayout: "fixed"}}>
+                <Grid container style={{margin:"0.5208333333vw", justifyContent: "center", display: "flex-grid", columnWidth: "50%", gridGap: "0.5208333333vw", tableLayout: "fixed", alignContent:"center"}}>
                 {weaknesses.map(ptype => 
-                  <Grid item><Item style={{width: "30px", height:"20px", alignSelf:"center", backgroundColor:typeColours[ptype[0]]}}><img height={"100%"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype[0]+'.png'}/></Item></Grid>
+                  <Grid item><Item style={{width: "1.5625vw", height:"1.041666667vw", alignSelf:"center", backgroundColor:typeColours[ptype[0]], textAlign:"center", alignContent:"center"}}><img height={"100%"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype[0]+'.png'}/></Item></Grid>
                   )}
                 </Grid>
-                <Text style={{fontSize: "16px", color:("black")}}>Resistances:</Text>
+                <Text style={{fontSize: "0.8333333333vw", color:("black")}}>Resistances:</Text>
                 <br style={{display:"block"}}></br>
-                <Grid container style={{margin:"10px", justifyContent: "center", display: "flex-grid", columnWidth: "50%", gridGap: "10px", tableLayout: "fixed"}}>
+                <Grid container style={{margin:"0.5208333333vw", justifyContent: "center", display: "flex-grid", columnWidth: "50%", gridGap: "0.5208333333vw", tableLayout: "fixed"}}>
                 {resists.map(ptype => 
-                  <Grid item><Item style={{width: "30px", height:"20px", alignSelf:"center", backgroundColor:typeColours[ptype[0]]}}><img height={"100%"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype[0]+'.png'}/></Item></Grid>
+                  <Grid item><Item style={{width: "1.5625vw", height:"1.041666667vw", alignSelf:"center", backgroundColor:typeColours[ptype[0]], textAlign:"center", alignContent:"center"}}><img height={"100%"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype[0]+'.png'}/></Item></Grid>
                   )}
                 </Grid>
-                <Text style={{fontSize: "16px", color:("black")}}>Immunities:</Text>
+                <Text style={{fontSize: "0.8333333333vw", color:("black")}}>Immunities:</Text>
                 <br style={{display:"block"}}></br>
-                <Grid container style={{margin:"10px", justifyContent: "center", display: "flex-grid", columnWidth: "50%", gridGap: "10px", tableLayout: "fixed"}}>
+                <Grid container style={{margin:"0.5208333333vw", justifyContent: "center", display: "flex-grid", columnWidth: "50%", gridGap: "0.5208333333vw", tableLayout: "fixed"}}>
                 {immunities.map(ptype => 
-                  <Grid item><Item style={{width: "30px", height:"20px", alignSelf:"center", backgroundColor:typeColours[ptype[0]]}}><img height={"100%"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype[0]+'.png'}/></Item></Grid>
+                  <Grid item><Item style={{width: "1.5625vw", height:"1.041666667vw", alignSelf:"center", backgroundColor:typeColours[ptype[0]], textAlign:"center", alignContent:"center"}}><img height={"100%"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype[0]+'.png'}/></Item></Grid>
                   )}
                 </Grid>
             </Grid>
@@ -430,7 +430,7 @@ class MainComp extends React.Component {
     return (
       <div className="App" style={{display:"grid"}}>
         <form style={{display:"grid"}} onSubmit={event => {event.preventDefault(); this.autosearch()}}>
-        <input style={{borderRadius: "20px", zIndex:12, position: 'fixed', justifySelf: "center", borderWidth:"1px", width:"75%", margin:"auto", display:"block", transform: "translate(0px, 10px)", paddingLeft: "20px", fontFamily: "bwFont"}}
+        <input style={{borderRadius: "1.041666667vw", zIndex:12, position: 'fixed', justifySelf: "center", borderWidth:"1px", width:"75%", margin:"auto", display:"block", transform: "translate(0px, 0.5208333333vw)", paddingLeft: "1.041666667vw", fontFamily: "bwFont"}}
         type="text" placeholder='enter search (i.e type=fire atk>120)' onChange={event => {this.setQuery(event.target.value)}}/>
         </form>
         {loadingText}
@@ -445,7 +445,7 @@ class MainComp extends React.Component {
           
           <Grid item xs={4} sm={2} md={1.5} lg={1} key={poke[3]} className='hover-style'>
             <Item style={{}} className='load-style' onClick={this.activateOverlay.bind(this, poke[3])}>
-            <img src={process.env.PUBLIC_URL + poke[2]} style={{alignContent: "center"}} alt="pokemon data"></img>
+            <img src={process.env.PUBLIC_URL + poke[2]} style={{alignContent: "center", imageRendering: "pixelated"}} alt="pokemon data"></img>
             </Item>
           </Grid>
           )}
