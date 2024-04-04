@@ -1,3 +1,4 @@
+
 var globalSortMode = "AND";
 
 function count(/**@type String */str, /**@type String */seg)
@@ -93,6 +94,55 @@ function checkID(icon, comp, str_value)
             return icID < value;
     }
 }
+
+function checkWeakness(icon, comp, str_value)
+{
+    if(comp == "=")
+    {
+        if(icon.dmgfrom[icon.id][str_value] > 1)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+function checkResist(icon, comp, str_value)
+{
+    if(comp == "=")
+    {
+        if(icon.dmgfrom[icon.id][str_value] < 1 && icon.dmgfrom[icon.id][str_value] > 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+function checkNeutral(icon, comp, str_value)
+{
+    if(comp == "=")
+    {
+        if(icon.dmgfrom[icon.id][str_value] == 1)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+function checkImmune(icon, comp, str_value)
+{
+    if(comp == "=")
+    {
+        if(icon.dmgfrom[icon.id][str_value] == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 function checkForms(icon, comp, str_value)
 {
@@ -259,7 +309,19 @@ var operators =
     "id":checkID,
     "natdex":checkID,
 
-    "learns":checkLearnset
+    "learns":checkLearnset,
+
+    "weakness":checkWeakness,
+    "weak":checkWeakness,
+
+    "resistance":checkResist,
+    "resists":checkResist,
+    "resist":checkResist,
+
+    "neutral":checkNeutral,
+
+    "immunity":checkImmune,
+    "immune":checkImmune
 }
 
 var desc =
@@ -282,7 +344,7 @@ var desc =
     "checkLearnset":"The learnset of a pokemon. Checks if equated move is in the learnset (i.e learns=rock-throw)"
 }
 
-function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */dataList, formDict)
+function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */dataList, formDict, damageFrom)
 {
     arg = arg.toLowerCase();
     console.log(dataList)
@@ -316,11 +378,12 @@ function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */dataList,
     for(var i = 0; i < dataList.length; i++)
     {
         
-        if(operators[operator]({data: dataList[i][0], spec_data: dataList[i][1], forms: formDict[toString(dataList[i][3])]}, comparator, value))
+        if(operators[operator]({data: dataList[i][0], spec_data: dataList[i][1], forms: formDict[toString(dataList[i][3])], id: dataList[i][3], dmgfrom: damageFrom}, comparator, value))
         {
             finalList.push(dataList[i]);
         }
     }
+    console.log()
     return finalList;
 }
 

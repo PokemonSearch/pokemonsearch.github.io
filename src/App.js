@@ -11,9 +11,13 @@ import {useSpring, animated} from 'react-spring';
 import { alignProperty } from '@mui/material/styles/cssUtils';
 import {Text} from 'react-native';
 import { evaluateArgument } from './data_analysis';
+import { type } from '@testing-library/user-event/dist/type';
+
 
 const MAX_PKMN = 1025;
+var typeChart;
 var loadingScale = 50;
+var currentTab = 0;
 var currently_loading = 0;
 var loaded_pkmn = 0;
 var finished_loaded_pkmn = 0;
@@ -33,6 +37,7 @@ var statNames = {
   'special-defense':'SpD',
   'speed':'Spe'
 }
+var damageFrom = {}
 var typeColours = {
   'normal': '#ABAB9B',
   'fire': '#FF4422',
@@ -51,8 +56,10 @@ var typeColours = {
   'dragon': '#7766EE',
   'dark': '#775544',
   'steel': '#AAAABB',
-  'fairy': '#EE99EE'
+  'fairy': '#EE99EE',
+  'none': "#2F2E2E"
 }
+
 var statNameVals = [
   'HP',
   'Atk',
@@ -89,7 +96,77 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
+function getWeaknesses(ID)
+{
+  var weak = []
+  var typeList = ["normal", "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark", "fairy"];
+  for(var i = 0; i < 18; i++)
+  {
+    var type = typeList[i];
+    if(damageFrom[ID][type] >= 2)
+    {
+      weak.push([type, damageFrom[ID][type]]);
+    }
+  }
+  return weak;
+}
 
+function getResists(ID)
+{
+  var res = []
+  var typeList = ["normal", "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark", "fairy"];
+  for(var i = 0; i < 18; i++)
+  {
+    var type = typeList[i];
+    if(damageFrom[ID][type] < 1 && damageFrom[ID][type] > 0)
+    {
+      res.push([type, damageFrom[ID][type]]);
+    }
+  }
+  return res;
+}
+
+function getImmunities(ID)
+{
+  var imm = []
+  var typeList = ["normal", "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark", "fairy"];
+  for(var i = 0; i < 18; i++)
+  {
+    var type = typeList[i];
+    if(damageFrom[ID][type] == 0)
+    {
+      imm.push([type, damageFrom[ID][type]]);
+    }
+  }
+  return imm;
+}
+
+function getDamageFromTable(types)
+{
+  var dmgTable = {"normal": 1, "fighting": 1, "flying": 1, "poison": 1, "ground": 1, "rock": 1, "bug": 1, "ghost": 1, "steel": 1, "fire": 1, "water": 1, "grass": 1, "electric": 1, "psychic": 1, "ice": 1, "dragon": 1, "dark": 1, "fairy": 1};
+  var typeList = ["normal", "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark", "fairy"];
+  for(var t = 0; t < types.length; t++)
+  {
+    var type = types[t];
+    for(var x = 0; x < 18; x++)
+    {
+      var checkedType = typeList[x];
+      if(typeChart[type]["2xFrom"].includes(checkedType))
+      {
+        dmgTable[checkedType] *= 2;
+      }
+      if(typeChart[type]["0.5xFrom"].includes(checkedType))
+      {
+        dmgTable[checkedType] /= 2;
+      }
+      if(typeChart[type]["0xFrom"].includes(checkedType))
+      {
+        dmgTable[checkedType] *= 0;
+      }
+    }
+  }
+  return dmgTable;
+}
 
 class MainComp extends React.Component {
 
@@ -121,7 +198,7 @@ class MainComp extends React.Component {
       currently_loading++;
       loaded_pkmn++;
       var mon_data = await getData(i);
-      currently_loading--;
+      
       data.push(mon_data);
       monForms[toString(mon_data[3])] = [];
       var v = Object.keys(mon_data[1].varieties)
@@ -145,6 +222,16 @@ class MainComp extends React.Component {
       {
         activeData = data;
       }
+      
+      var typeList = [];
+      for(var tv = 0; tv < mon_data[0].types.length; tv++)
+      {
+        typeList.push(mon_data[0].types[tv].type.name);
+      }
+      damageFrom[i.toString()] = getDamageFromTable(typeList);
+      console.log('added type data to ID',i.toString());
+
+      currently_loading--;
       finished_loaded_pkmn++;
       this.forceUpdate();
     }
@@ -156,6 +243,8 @@ class MainComp extends React.Component {
       return;
     }
     startedLoading = true;
+    typeChart = await fetch("data/api/typechart.json").then((response) => response.json());
+    console.log(typeChart);
     while(finished_loaded_pkmn < MAX_PKMN)
     {
       if(currently_loading < loadingScale && loaded_pkmn < MAX_PKMN)
@@ -168,6 +257,7 @@ class MainComp extends React.Component {
       }
       
     }
+    console.log("dmgFrom:",damageFrom);
     data.sort(function(a, b){return a[3] - b[3]});
     this.forceUpdate();
   }
@@ -193,10 +283,17 @@ class MainComp extends React.Component {
     this.forceUpdate();
   }
 
+  setTab(tabID)
+  {
+    currentTab = tabID;
+  }
+
   autosearch()
   {
     this.search(currentQuery);
   }
+
+  
 
   search(query)
   {
@@ -240,6 +337,23 @@ class MainComp extends React.Component {
     var pokeiconPanel = <p></p>;
     if(loaded_pkmn >= activeID && activeMon.length > 0)
     {
+      var weaknesses = getWeaknesses(activeID);
+      var resists = getResists(activeID);
+      var immunities = getImmunities(activeID);
+
+      if(weaknesses.length == 0)
+      {
+        weaknesses = [['none', -1]];
+      }
+      if(resists.length == 0)
+      {
+        resists = [['none', -1]];
+      }
+      if(immunities.length == 0)
+      {
+        immunities = [['none', -1]];
+      }
+
       var pokestats = []
       var curmon = activeMon[0];
       for(var i = 0; i < 6; i++)
@@ -253,7 +367,7 @@ class MainComp extends React.Component {
         <Item style={{display:"grid"}}>
           <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
           
-          <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "33%"}} columns={3} row={1}>
+          <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "20%", paddingLeft:"5%", paddingRight: "5%"}} columns={3} row={1}>
           <Grid item style={{width:"100%", alignSelf:"center", height: "200px"}}> 
               <BarChart
               yAxis={[{ scaleType: 'band', data: statNameVals, max:225}]}
@@ -262,9 +376,17 @@ class MainComp extends React.Component {
               layout="horizontal"
               />
             </Grid>
+          
+          <Grid item style={{alignContent:"center", alignSelf:"center", display:"flex-grid", textAlign:"center"}}> 
+                <Text style={{fontSize: "18px", color:("black")}}>Abilities:</Text>
+                <br></br>
+                {pokeabilities.map(pabl => 
+                  <Text style={{fontSize: "18px", color:(pabl.is_hidden == false ? "black" : "#C8AE0F")}}>{splitTitleCase(pabl.ability.name) + "   "}</Text>
+                  )}
+            </Grid>
             
-            <Grid item>
-              <img src={process.env.PUBLIC_URL + mon[2]} style={{justifySelf: "center", imageRendering: "pixelated", width:"40%"}} alt="pokemon data"></img>
+            <Grid item display={"grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
+              <img src={process.env.PUBLIC_URL + mon[2]} style={{justifySelf: "center", imageRendering: "pixelated", width:"200%", alignSelf: "center", textAlign:"center", display:"grid"}} alt="pokemon data"></img>
               
             </Grid>
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"}>
@@ -273,16 +395,33 @@ class MainComp extends React.Component {
                 <br style={{display:"block"}}></br>
                 <div style={{margin:"10px", justifyContent: "center", display: "grid", gridAutoFlow: "column", columnWidth: "100%", gridGap: "10px", tableLayout: "fixed"}}>
                 {poketypes.map(ptype => 
-                  <Item style={{width: "100px", alignSelf:"center", backgroundColor:typeColours[ptype.type.name]}}><Text style={{fontSize: "20px", color:"white"}}>{titleCase(ptype.type.name) + "  "}</Text></Item>
+                  <Item style={{width: "120px", alignSelf:"center", backgroundColor:typeColours[ptype.type.name]}}><Text style={{fontSize: "20px", color:"white"}}>{titleCase(ptype.type.name) + "  "}</Text>
+                  <img height={"20px"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype.type.name+'.png'}/></Item>
                   )}
                 </div>
-                <br></br>
-                <br></br>
-                <Text style={{fontSize: "12px", color:("black")}}>Abilities:</Text>
-                <br></br>
-                {pokeabilities.map(pabl => 
-                  <Text style={{fontSize: "18px", color:(pabl.is_hidden == false ? "black" : "#C8AE0F")}}>{splitTitleCase(pabl.ability.name) + "   "}</Text>
+            </Grid>
+            <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} textAlign={"center"}>
+                <Text style={{fontSize: "16px", color:("black")}}>Weaknesses:</Text>
+                <br style={{display:"block"}}></br>
+                <Grid container style={{margin:"10px", justifyContent: "center", display: "flex-grid", columnWidth: "50%", gridGap: "10px", tableLayout: "fixed"}}>
+                {weaknesses.map(ptype => 
+                  <Grid item><Item style={{width: "30px", height:"20px", alignSelf:"center", backgroundColor:typeColours[ptype[0]]}}><img height={"100%"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype[0]+'.png'}/></Item></Grid>
                   )}
+                </Grid>
+                <Text style={{fontSize: "16px", color:("black")}}>Resistances:</Text>
+                <br style={{display:"block"}}></br>
+                <Grid container style={{margin:"10px", justifyContent: "center", display: "flex-grid", columnWidth: "50%", gridGap: "10px", tableLayout: "fixed"}}>
+                {resists.map(ptype => 
+                  <Grid item><Item style={{width: "30px", height:"20px", alignSelf:"center", backgroundColor:typeColours[ptype[0]]}}><img height={"100%"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype[0]+'.png'}/></Item></Grid>
+                  )}
+                </Grid>
+                <Text style={{fontSize: "16px", color:("black")}}>Immunities:</Text>
+                <br style={{display:"block"}}></br>
+                <Grid container style={{margin:"10px", justifyContent: "center", display: "flex-grid", columnWidth: "50%", gridGap: "10px", tableLayout: "fixed"}}>
+                {immunities.map(ptype => 
+                  <Grid item><Item style={{width: "30px", height:"20px", alignSelf:"center", backgroundColor:typeColours[ptype[0]]}}><img height={"100%"} src={process.env.PUBLIC_URL + 'typeicons/'+ptype[0]+'.png'}/></Item></Grid>
+                  )}
+                </Grid>
             </Grid>
           </Grid>
       </Item>)
@@ -371,7 +510,7 @@ function analysis(searchQuery)
         var args = searchQuery.trimEnd().trimStart().split(" ");
         for(var i = 0; i < args.length; i++)
         {
-            tempList = tempList.concat(evaluateArgument(args[i], data, monForms));
+            tempList = tempList.concat(evaluateArgument(args[i], data, monForms, damageFrom));
         }
         var endList = []
         if(tempList.length == 0)
