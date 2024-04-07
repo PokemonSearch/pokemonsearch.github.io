@@ -7,15 +7,25 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import { BarChart } from '@mui/x-charts/BarChart';
+import {PieChart, pieArcLabelClasses} from '@mui/x-charts/PieChart';
 import {useSpring, animated} from 'react-spring';
 import { alignProperty } from '@mui/material/styles/cssUtils';
 import {Text} from 'react-native';
 import { evaluateArgument } from './data_analysis';
 import { type } from '@testing-library/user-event/dist/type';
+import Fade from '@mui/material/Fade';
+import {Dex} from '@pkmn/dex';
+import {Generations} from '@pkmn/data';
+import {Smogon} from '@pkmn/smogon';
 
+const gens = new Generations(Dex);
+const fetch = window.fetch.bind(window);
+console.log(fetch);
+const smogon = new Smogon(fetch);
 
 const MAX_PKMN = 1025;
 var typeChart;
+var currentTab = 0;
 var loadingScale = 50;
 var currentTab = 0;
 var currently_loading = 0;
@@ -24,6 +34,7 @@ var finished_loaded_pkmn = 0;
 var inline_loaded = 0;
 var startedLoading = false;
 var activeID = 1;
+var currentForm = 1;
 var activeMon = [];
 var monForms = {};
 var inSearch = false;
@@ -96,46 +107,77 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-function getWeaknesses(ID)
+const TabItem = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+  borderTopLeftRadius: 0,
+  borderTopRightRadius: 0
+}));
+var usageTable = {}
+
+async function getUsage(pokename)
+{
+  for(var generation = 1; generation <= 9; generation++)
+  {
+    var usage_key = pokename + " - " + generation.toString();
+    var usageData = await smogon.stats(gens.get(generation), pokename);
+    usageTable[usage_key] = usageData;
+    console.log("added usage data for " + pokename + ":",usageData);
+  }
+}
+
+function grabUsage(pokename, generation)
+{
+  var usage_key = pokename + " - " + generation.toString();
+  return usageTable[usage_key]; 
+}
+
+
+
+
+function getWeaknesses(ID, formID)
 {
   var weak = []
   var typeList = ["normal", "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark", "fairy"];
   for(var i = 0; i < 18; i++)
   {
     var type = typeList[i];
-    if(damageFrom[ID][type] >= 2)
+    if(damageFrom[ID][formID][type] >= 2)
     {
-      weak.push([type, damageFrom[ID][type]]);
+      weak.push([type, damageFrom[ID][formID][type]]);
     }
   }
   return weak;
 }
 
-function getResists(ID)
+function getResists(ID, formID)
 {
   var res = []
   var typeList = ["normal", "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark", "fairy"];
   for(var i = 0; i < 18; i++)
   {
     var type = typeList[i];
-    if(damageFrom[ID][type] < 1 && damageFrom[ID][type] > 0)
+    if(damageFrom[ID][formID][type] < 1 && damageFrom[ID][formID][type] > 0)
     {
-      res.push([type, damageFrom[ID][type]]);
+      res.push([type, damageFrom[ID][formID][type]]);
     }
   }
   return res;
 }
 
-function getImmunities(ID)
+function getImmunities(ID, formID)
 {
   var imm = []
   var typeList = ["normal", "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark", "fairy"];
   for(var i = 0; i < 18; i++)
   {
     var type = typeList[i];
-    if(damageFrom[ID][type] == 0)
+    if(damageFrom[ID][formID][type] == 0)
     {
-      imm.push([type, damageFrom[ID][type]]);
+      imm.push([type, damageFrom[ID][formID][type]]);
     }
   }
   return imm;
@@ -197,10 +239,25 @@ class MainComp extends React.Component {
     {
       currently_loading++;
       loaded_pkmn++;
+
       var mon_data = await getData(i);
+
+      var typeList = [];
+      for(var tv = 0; tv < mon_data[0].types.length; tv++)
+      {
+        typeList.push(mon_data[0].types[tv].type.name);
+      }
       
       data.push(mon_data);
-      monForms[toString(mon_data[3])] = [];
+      monForms[mon_data[3].toString()] = [
+        {
+              name: "Base",
+              img: mon_data[2],
+              data: mon_data[0]
+          }
+      ];
+      damageFrom[i.toString()] = []
+      damageFrom[i.toString()].push(getDamageFromTable(typeList));
       var v = Object.keys(mon_data[1].varieties)
       for(var iv = 1; iv < v.length; iv++)
       {
@@ -212,10 +269,19 @@ class MainComp extends React.Component {
           var form_data_response = await fetch("data/api/"+mon_data[3]+"/"+formName+"/api.json").then((response) => response.json())
           var formObj = {
               name: titleCase(formName),
+              fullname: fullName,
               img: path,
               data: form_data_response
           }
-          monForms[toString(data[3])].push(formObj);
+          getUsage(fullName, 9);
+          var form_typeList = [];
+          for(var tv = 0; tv < form_data_response.types.length; tv++)
+          {
+            form_typeList.push(form_data_response.types[tv].type.name);
+          }
+          console.log(form_typeList);
+          damageFrom[i.toString()].push(getDamageFromTable(form_typeList));
+          monForms[mon_data[3].toString()].push(formObj);
       }
       
       if(inSearch == false)
@@ -223,13 +289,10 @@ class MainComp extends React.Component {
         activeData = data;
       }
       
-      var typeList = [];
-      for(var tv = 0; tv < mon_data[0].types.length; tv++)
-      {
-        typeList.push(mon_data[0].types[tv].type.name);
-      }
-      damageFrom[i.toString()] = getDamageFromTable(typeList);
+      
+      
       console.log('added type data to ID',i.toString());
+      getUsage(mon_data[0].name);
 
       currently_loading--;
       finished_loaded_pkmn++;
@@ -261,6 +324,12 @@ class MainComp extends React.Component {
     data.sort(function(a, b){return a[3] - b[3]});
     this.forceUpdate();
   }
+
+  setActiveForm(formNum)
+  {
+    currentForm = formNum;
+    this.forceUpdate();
+  }
   
 
   activateOverlay(ID)
@@ -269,6 +338,7 @@ class MainComp extends React.Component {
     {
       activeMon = [];
       activeID = 0;
+      currentForm = 0;
       this.forceUpdate();
       return;
     }
@@ -280,12 +350,14 @@ class MainComp extends React.Component {
     }
     activeID = ID;
     activeMon = [data[activeID-1]];
+    currentForm = 0;
     this.forceUpdate();
   }
 
   setTab(tabID)
   {
     currentTab = tabID;
+    this.forceUpdate();
   }
 
   autosearch()
@@ -312,16 +384,12 @@ class MainComp extends React.Component {
 
   render()
   {
+    
     if(startedLoading == false)
     {
       this.load_data();
     }
-    
-    if(inline_loaded != data.length)
-    {
-      this.setLoad(data);
-      inline_loaded = data.length; 
-    }
+
     var loadingText = <h3></h3>;
     if(loaded_pkmn < MAX_PKMN)
     {
@@ -334,13 +402,82 @@ class MainComp extends React.Component {
     {
       toRender = activeData;
     }
-    var pokeiconPanel = <p></p>;
+    var pokeiconDropdown = <p></p>;
+    var pokeiconPanels = []
+    var pokeiconTabs = <p></p>;
+
+    var tabList = [
+      {
+        icon: process.env.PUBLIC_URL + 'pokeball.png',
+        name: "Overview",
+        tabID: 0
+      },
+      {
+        icon: process.env.PUBLIC_URL + 'premball.png',
+        name: "Learnset",
+        tabID: 1
+      },
+      {
+        icon: process.env.PUBLIC_URL + 'specball.png',
+        name: "Movesets",
+        tabID: 2
+      }
+    ]
+
+    var renderPanel = false;
     if(loaded_pkmn >= activeID && activeMon.length > 0)
     {
-      var weaknesses = getWeaknesses(activeID);
-      var resists = getResists(activeID);
-      var immunities = getImmunities(activeID);
+      renderPanel = true;
+      var pokename = activeMon[0][0].name;
+      currentForm = Math.min(currentForm, monForms[activeMon[0][3].toString()].length - 1)
+      var curmon = monForms[activeMon[0][3].toString()][currentForm];
+      var otherforms = [];
+      for(var v = 0; v < monForms[activeMon[0][3].toString()].length; v++)
+      {
+        if(v != currentForm)
+        {
+          otherforms.push([monForms[activeMon[0][3].toString()][v], v]);
+        }
+      }
+      console.log(otherforms);
+      var hasForms = otherforms.length > 0;
+      
+      var pokemoves = monForms[activeMon[0][3].toString()][currentForm].data.moves;
+      console.log(pokemoves);
 
+      var weaknesses = getWeaknesses(activeID, currentForm);
+      var resists = getResists(activeID, currentForm);
+      var immunities = getImmunities(activeID, currentForm);
+
+      var compData = null;
+      var moveUsage = [];
+      var compIterations = [];
+      var compName = pokename;
+      if(currentForm > 0)
+      {
+        compName = monForms[activeMon[0][3].toString()][currentForm].fullname;
+      }
+      console.log("comp name:",compName, monForms[activeMon[0][3].toString()][currentForm]);
+      var chosenGen = 9;
+      compData = null;
+      while(compData == null && chosenGen >= 1)
+      {
+        compData = grabUsage(compName, chosenGen);
+        chosenGen--;
+      }
+      chosenGen++;
+      console.log("comp data:", compData);
+      if(compData != null)
+      {
+        compIterations.push(0);
+        var moveKeys = Object.keys(compData.moves).reverse();
+        for(var m = 0; m < moveKeys.length; m++)
+        {
+          moveUsage.push({id:m, value:(100*compData.moves[moveKeys[m]]).toFixed(2), label: moveKeys[m]});
+        }
+        moveUsage.reverse();
+        console.log("move usage:",moveUsage);
+      }
       if(weaknesses.length == 0)
       {
         weaknesses = [['none', -1]];
@@ -355,16 +492,34 @@ class MainComp extends React.Component {
       }
 
       var pokestats = []
-      var curmon = activeMon[0];
+      
+      var prefix = "";
+      var suffix = "";
+      if(currentForm > 0)
+      {
+        var full = (curmon.name).split("-");
+        prefix = full[0] + "-";
+        suffix = "";
+        for(var sf = 1; sf < full.length; sf++)
+        {
+          suffix += full[sf];
+          if(sf < full.length - 1)
+          {
+            suffix += " ";
+          }
+        }
+      }
+      var pokeimg = curmon.img;
+      console.log("curmon:",curmon);
       for(var i = 0; i < 6; i++)
       {
-        pokestats.push(curmon[0].stats[i].base_stat);
+        pokestats.push(curmon.data.stats[i].base_stat);
       }
       /** @type {Array} */
-      var poketypes = curmon[0].types;
-      var pokeabilities = curmon[0].abilities;
-      pokeiconPanel = activeMon.map(mon => 
-        <Item style={{display:"grid"}}>
+      var poketypes = curmon.data.types;
+      var pokeabilities = curmon.data.abilities;
+      var pokeOverview = activeMon.map(mon => 
+        <Item style={{display:"grid", maxHeight:(hasForms ? "133%" : "100%")}} className='underPanel'>
           <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
           
           <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "20%", paddingLeft:"5%", paddingRight: "5%"}} columns={3} row={1}>
@@ -385,12 +540,19 @@ class MainComp extends React.Component {
                   )}
             </Grid>
             
-            <Grid item display={"grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
-              <img src={process.env.PUBLIC_URL + mon[2]} style={{justifySelf: "center", imageRendering: "pixelated", width:"200%", alignSelf: "center", textAlign:"center", display:"grid"}} alt="pokemon data"></img>
-              
+            <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"} style={{whiteSpace:'nowrap'}}>
+              <img src={process.env.PUBLIC_URL + pokeimg} style={{justifySelf: "center", imageRendering: "pixelated", width:"100%", alignSelf: "center", textAlign:"center", display:"grid"}} alt="pokemon data"></img>
+              <nobr><div style={{gridAutoFlow:"column", display:"grid", columnWidth:"30%"}}>
+              {otherforms.map(pform => 
+                <Grid item style={{padding:"5px", width:"100%"}}><Item className='hover-style' style={{alignContent:"center", justifyContent: "center", display:"grid"}} key={pform[1]} onClick={this.setActiveForm.bind(this, Number(pform[1]))}>
+                <img src={process.env.PUBLIC_URL + pform[0].img} style={{justifySelf: "center", imageRendering: "pixelated", alignSelf: "center", textAlign:"center", display:"grid", width:"100%"}} alt="pokemon data"></img>
+                </Item></Grid>
+                )}
+              </div></nobr>
             </Grid>
+            
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"}>
-                <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{splitTitleCase(mon[0].name)}</b></Text></h1>
+                <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{splitTitleCase(prefix + pokename + "-" + suffix)}</b></Text></h1>
                 <Text style={{fontSize: "12px", color:("black")}}>Type:</Text>
                 <br style={{display:"block"}}></br>
                 <div style={{margin:"0.5208333333vw", justifyContent: "center", display: "grid", gridAutoFlow: "column", columnWidth: "100%", gridGap: "0.5208333333vw", tableLayout: "fixed"}}>
@@ -425,6 +587,63 @@ class MainComp extends React.Component {
             </Grid>
           </Grid>
       </Item>)
+      var pokeLearnset = activeMon.map(mon => 
+        <Item style={{display:"grid", maxHeight:(hasForms ? "133%" : "100%")}} className='underPanel'>
+          <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
+          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Learnset for " + splitTitleCase(prefix + pokename + "-" + suffix)}</b></Text></h1>
+          <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%"}} columns={3} row={1}>
+            <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
+                <Grid container width={"100%"} display={"grid"} height={"300px"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height: "200px"}}>
+                  {pokemoves.map(pokemove => 
+                  <Grid item width={"100%"} display={"grid"}><Item width={"100%"} display={"grid"}>
+                  <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1vw"}}>{splitTitleCase(pokemove.move.name)}</Text></h1>
+
+                  </Item></Grid>
+                )}
+              </Grid>
+            </Grid>
+          </Grid>
+      </Item>)
+      var pokeSmogon = activeMon.map(mon => 
+        <Item style={{display:"grid", maxHeight:(hasForms ? "150%" : "150%")}} className='underPanel'>
+          <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
+          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Moveset Data for " + splitTitleCase(prefix + pokename + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
+          <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "30%", paddingLeft:"5%", paddingRight: "5%"}} columns={3} row={1}>
+            <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
+                <Grid container width={"100%"} display={"grid"} height={"300px"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height: "400px"}}>
+                  {moveUsage.map(itr =>
+                    <Grid item><Item><Text>{itr.label}: {itr.value}%</Text></Item></Grid>
+                  )}
+              </Grid>
+            </Grid>
+            <Grid item style={{width:"100%", alignSelf:"center", height: "400px", display:"flex-grid", alignContent:"center"}}>
+                <PieChart
+                  series={[{data: moveUsage, arcLabelMinAngle: 45, highlightScope: { faded: 'global', highlighted: 'item'}}]}
+                  slotProps={{
+                    legend: {
+                      hidden: true
+                    }
+                  }}
+                  sx={{
+                    [`& .${pieArcLabelClasses.root}`]: {
+                      fill: 'white',
+                      fontWeight: 'bold',
+                    },
+                  }}
+                />
+            </Grid>
+          </Grid>
+      </Item>)
+      pokeiconPanels = [pokeOverview, pokeLearnset, pokeSmogon]
+      pokeiconTabs = <Grid container style={{paddingLeft:"10%", display:"grid", gridAutoColumns:"3%", gridAutoFlow:"column", gridGap:"4%"}}>
+        {tabList.map(tab => 
+        <Grid item style={{width:"200%"}}><TabItem className='tab-style' onClick={this.setTab.bind(this, tab.tabID)}>
+          <img src={tab.icon} style={{width:"50%", imageRendering:"pixelated"}}/>
+          <br/>
+          <Text style={{fontSize: "0.8vw"}}>{tab.name}</Text>
+        </TabItem></Grid>)}
+        </Grid>
+      pokeiconDropdown = pokeiconPanels[currentTab];
     }
 
     return (
@@ -434,20 +653,22 @@ class MainComp extends React.Component {
         type="text" placeholder='enter search (i.e type=fire atk>120)' onChange={event => {this.setQuery(event.target.value)}}/>
         </form>
         {loadingText}
-        <div className='pokePanel' fontFamily={"bwFont"} style={{zIndex: 10}}>
-          {pokeiconPanel}
+        <div className='pokePanel' fontFamily={"bwFont"} style={{zIndex: 10, height:(renderPanel ? "40%": "0%")}}>
+          {pokeiconDropdown}
+          {pokeiconTabs}
         </div>
         <br></br>
         <h2 style={{textAlign: "center", fontFamily:"bwFont"}}>PokéSearch</h2>
         <body>
-        <Grid container spacing={1}>
+        <Grid container spacing={1} style={{margin:"30px auto 0"}}>
           {toRender.map(poke => 
-          
+          <Fade in timeout={1500}>
           <Grid item xs={4} sm={2} md={1.5} lg={1} key={poke[3]} className='hover-style'>
-            <Item style={{}} className='load-style' onClick={this.activateOverlay.bind(this, poke[3])}>
+            <Item style={{display:"grid", alignContent:"center", justifyContent:"center"}} className='load-style' onClick={this.activateOverlay.bind(this, poke[3])}>
             <img src={process.env.PUBLIC_URL + poke[2]} style={{alignContent: "center", imageRendering: "pixelated"}} alt="pokemon data"></img>
             </Item>
           </Grid>
+          </Fade>
           )}
         </Grid>
         </body>

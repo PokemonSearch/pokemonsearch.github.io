@@ -99,7 +99,7 @@ function checkWeakness(icon, comp, str_value)
 {
     if(comp == "=")
     {
-        if(icon.dmgfrom[icon.id][str_value] > 1)
+        if(icon.dmgfrom[icon.id][0][str_value] > 1)
         {
             return true;
         }
@@ -111,7 +111,7 @@ function checkResist(icon, comp, str_value)
 {
     if(comp == "=")
     {
-        if(icon.dmgfrom[icon.id][str_value] < 1 && icon.dmgfrom[icon.id][str_value] > 0)
+        if(icon.dmgfrom[icon.id][0][str_value] < 1 && icon.dmgfrom[icon.id][0][str_value] > 0)
         {
             return true;
         }
@@ -123,7 +123,7 @@ function checkNeutral(icon, comp, str_value)
 {
     if(comp == "=")
     {
-        if(icon.dmgfrom[icon.id][str_value] == 1)
+        if(icon.dmgfrom[icon.id][0][str_value] == 1)
         {
             return true;
         }
@@ -135,7 +135,7 @@ function checkImmune(icon, comp, str_value)
 {
     if(comp == "=")
     {
-        if(icon.dmgfrom[icon.id][str_value] == 0)
+        if(icon.dmgfrom[icon.id][0][str_value] == 0)
         {
             return true;
         }
@@ -377,7 +377,7 @@ function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */dataList,
     var finalList = []
     for(var i = 0; i < dataList.length; i++)
     {
-        
+        console.log("AN forms: ",formDict[toString(dataList[i][3])]);
         if(operators[operator]({data: dataList[i][0], spec_data: dataList[i][1], forms: formDict[toString(dataList[i][3])], id: dataList[i][3], dmgfrom: damageFrom}, comparator, value))
         {
             finalList.push(dataList[i]);
