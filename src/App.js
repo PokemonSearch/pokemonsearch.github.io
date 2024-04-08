@@ -8,6 +8,7 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import { BarChart } from '@mui/x-charts/BarChart';
 import {PieChart, pieArcLabelClasses} from '@mui/x-charts/PieChart';
+import {Gauge} from '@mui/x-charts/Gauge';
 import {useSpring, animated} from 'react-spring';
 import { alignProperty } from '@mui/material/styles/cssUtils';
 import {Text} from 'react-native';
@@ -40,6 +41,8 @@ var monForms = {};
 var inSearch = false;
 var activeData = [];
 var pokeStats= [];
+var nameToID = {}
+var nameToIMG = {}
 var statNames = {
   'hp':'HP',
   'attack':'Atk',
@@ -80,23 +83,37 @@ var statNameVals = [
   'Spe'
 ]
 var form_whitelist = 
-    {
-        "25": [1, 2, 4, 5, 14, 16],
-        "658": [2],
-        "718": [1,2,3],
-        "735": [],
-        "738": [],
-        "743": [],
-        "752": [],
-        "754": [],
-        "758": [],
-        "774": [7,8,9,10,11,12],
-        "777": [],
-        "778": [],
-        "784": [],
-        "1007": [],
-        "1008": []
-    }
+{
+    "20": [1],
+    "25": [1, 2, 4, 5, 14, 16],
+    "658": [2],
+    "718": [1,2,3],
+    "735": [],
+    "738": [],
+    "743": [],
+    "752": [],
+    "754": [],
+    "758": [],
+    "774": [7,8,9,10,11,12],
+    "777": [],
+    "778": [],
+    "784": [],
+    "1007": [],
+    "1008": []
+}
+
+var smogon_tiers = 
+{
+    "gen1":["ou","uu","nu","ubers"],
+    "gen2":["ou","uu","nu","ubers"],
+    "gen3":["ou","uu","nu","ubers"],
+    "gen4":["ou","uu","nu","ubers","lc"],
+    "gen5":["ou","uu","ru","nu","ubers","lc"],
+    "gen6":["ou","uu","ru","nu","pu","ubers","lc"],
+    "gen7":["ou","uu","ru","nu","pu","ubers","lc"],
+    "gen8":["ou","uu","ru","nu","pu","ubers","lc"],
+    "gen9":["ou","uu","ru","nu","pu","ubers","lc"]
+}
 const delay = ms => new Promise(res => setTimeout(res, ms));
 var currentQuery = ""
 const Item = styled(Paper)(({ theme }) => ({
@@ -261,6 +278,10 @@ class MainComp extends React.Component {
       var v = Object.keys(mon_data[1].varieties)
       for(var iv = 1; iv < v.length; iv++)
       {
+          if(mon_data[3] in form_whitelist && !form_whitelist[mon_data[3]].includes(iv))
+          {
+            continue;
+          }
           if(Object.keys(form_whitelist).includes(toString(mon_data[3])) && !form_whitelist[mon_data[3]].includes(iv)){continue;}
           /**@type String */
           var fullName = mon_data[1].varieties[v[iv]]["pokemon"]["name"]
@@ -274,6 +295,8 @@ class MainComp extends React.Component {
               data: form_data_response
           }
           getUsage(fullName, 9);
+          this.addNameToID(mon_data, fullName);
+          this.addNameToIMG(path, fullName);
           var form_typeList = [];
           for(var tv = 0; tv < form_data_response.types.length; tv++)
           {
@@ -293,11 +316,25 @@ class MainComp extends React.Component {
       
       console.log('added type data to ID',i.toString());
       getUsage(mon_data[0].name);
-
+      this.addToID(mon_data);
+      this.addNameToIMG(mon_data[2], mon_data[0].name);
       currently_loading--;
       finished_loaded_pkmn++;
       this.forceUpdate();
     }
+  }
+
+  async addToID(mon_data)
+  {
+    nameToID[mon_data[0].name] = mon_data[3];
+  }
+  async addNameToID(mon_data, name)
+  {
+    nameToID[name] = mon_data[3];
+  }
+  async addNameToIMG(img_path, name)
+  {
+    nameToIMG[name] = img_path;
   }
   async load_data()
   {
@@ -339,6 +376,7 @@ class MainComp extends React.Component {
       activeMon = [];
       activeID = 0;
       currentForm = 0;
+      this.setTab(0);
       this.forceUpdate();
       return;
     }
@@ -351,6 +389,7 @@ class MainComp extends React.Component {
     activeID = ID;
     activeMon = [data[activeID-1]];
     currentForm = 0;
+    this.setTab(0);
     this.forceUpdate();
   }
 
@@ -419,8 +458,18 @@ class MainComp extends React.Component {
       },
       {
         icon: process.env.PUBLIC_URL + 'specball.png',
-        name: "Movesets",
+        name: "Move Usage",
         tabID: 2
+      },
+      {
+        icon: process.env.PUBLIC_URL + 'data/items/sprites/leftovers/leftovers.png',
+        name: "Item Usage",
+        tabID: 3
+      },
+      {
+        icon: process.env.PUBLIC_URL + 'data/items/sprites/eject-button/eject-button.png',
+        name: "Counters",
+        tabID: 4
       }
     ]
 
@@ -451,6 +500,8 @@ class MainComp extends React.Component {
 
       var compData = null;
       var moveUsage = [];
+      var itemUsage = [];
+      var counters = [];
       var compIterations = [];
       var compName = pokename;
       if(currentForm > 0)
@@ -470,13 +521,37 @@ class MainComp extends React.Component {
       if(compData != null)
       {
         compIterations.push(0);
-        var moveKeys = Object.keys(compData.moves).reverse();
+        var moveKeys = Object.keys(compData.moves);
         for(var m = 0; m < moveKeys.length; m++)
         {
           moveUsage.push({id:m, value:(100*compData.moves[moveKeys[m]]).toFixed(2), label: moveKeys[m]});
         }
-        moveUsage.reverse();
         console.log("move usage:",moveUsage);
+        var itemKeys = Object.keys(compData.items);
+        for(var m = 0; m < itemKeys.length; m++)
+        {
+          var itemName = itemKeys[m].toLowerCase().replace(" ","-");
+          if(itemName.endsWith("-z"))
+          {
+            itemName += "--held";
+          }
+          itemUsage.push({id:m, value:(100*compData.items[itemKeys[m]]).toFixed(2), label: itemKeys[m], img: (process.env.PUBLIC_URL + "/data/items/sprites/"+itemName+"/"+itemName+".png")});
+        }
+        console.log("item usage:",itemUsage);
+        var counterKeys = Object.keys(compData.counters);
+        for(var m = 0; m < counterKeys.length; m++)
+        {
+          var counterName = counterKeys[m].toLowerCase().replace(" ","-");
+          var effectivenessRating = Math.sqrt(Math.pow(2*compData.counters[counterKeys[m]][1], 2) + Math.pow((1/2.0)*compData.counters[counterKeys[m]][2],2))/Math.sqrt(2*2 + (1/2)*(1/2));
+          counters.push({id:m, 
+            value:(100*effectivenessRating).toFixed(2), 
+            label: counterKeys[m], 
+            img: (process.env.PUBLIC_URL + nameToIMG[counterName]),
+            p: compData.counters[counterKeys[m]][1],
+            d: compData.counters[counterKeys[m]][2]
+          });
+        }
+        console.log("counters:",counters);
       }
       if(weaknesses.length == 0)
       {
@@ -593,10 +668,10 @@ class MainComp extends React.Component {
           <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Learnset for " + splitTitleCase(prefix + pokename + "-" + suffix)}</b></Text></h1>
           <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%"}} columns={3} row={1}>
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
-                <Grid container width={"100%"} display={"grid"} height={"300px"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height: "200px"}}>
+                <Grid container width={"100%"} display={"grid"} height={"300px"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height: "200px", lineHeight:"10px"}}>
                   {pokemoves.map(pokemove => 
                   <Grid item width={"100%"} display={"grid"}><Item width={"100%"} display={"grid"}>
-                  <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1vw"}}>{splitTitleCase(pokemove.move.name)}</Text></h1>
+                  <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "0.7vw"}}>{splitTitleCase(pokemove.move.name)}</Text></h1>
 
                   </Item></Grid>
                 )}
@@ -604,19 +679,21 @@ class MainComp extends React.Component {
             </Grid>
           </Grid>
       </Item>)
-      var pokeSmogon = activeMon.map(mon => 
+      var pokeMoveUsage = activeMon.map(mon => 
         <Item style={{display:"grid", maxHeight:(hasForms ? "150%" : "150%")}} className='underPanel'>
           <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
           <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Moveset Data for " + splitTitleCase(prefix + pokename + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
-          <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "30%", paddingLeft:"5%", paddingRight: "5%"}} columns={3} row={1}>
+          <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%", height:"100%"}} columns={3} row={1}>
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
-                <Grid container width={"100%"} display={"grid"} height={"300px"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height: "400px"}}>
+                <Grid container width={"100%"} display={"grid"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height:"40vh"}}>
+                  <div style={{height: "400px"}}>
                   {moveUsage.map(itr =>
                     <Grid item><Item><Text>{itr.label}: {itr.value}%</Text></Item></Grid>
                   )}
+                  </div>
               </Grid>
             </Grid>
-            <Grid item style={{width:"100%", alignSelf:"center", height: "400px", display:"flex-grid", alignContent:"center"}}>
+            <Grid item style={{width:"100%", height:"40vh",alignSelf:"center", display:"flex-grid", alignContent:"center", justifyContent:"center"}}>
                 <PieChart
                   series={[{data: moveUsage, arcLabelMinAngle: 45, highlightScope: { faded: 'global', highlighted: 'item'}}]}
                   slotProps={{
@@ -630,17 +707,72 @@ class MainComp extends React.Component {
                       fontWeight: 'bold',
                     },
                   }}
-                />
+                                  />
             </Grid>
           </Grid>
       </Item>)
-      pokeiconPanels = [pokeOverview, pokeLearnset, pokeSmogon]
-      pokeiconTabs = <Grid container style={{paddingLeft:"10%", display:"grid", gridAutoColumns:"3%", gridAutoFlow:"column", gridGap:"4%"}}>
+      var pokeItemUsage = activeMon.map(mon => 
+        <Item style={{display:"grid", maxHeight:(hasForms ? "150%" : "150%")}} className='underPanel'>
+          <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
+          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Item Usage Data for " + splitTitleCase(prefix + pokename + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
+          <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%", height:"100%"}} columns={3} row={1}>
+            <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
+                <Grid container width={"100%"} display={"grid"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height:"40vh"}}>
+                  <div style={{height: "400px"}}>
+                  {itemUsage.map(itr =>
+                    <Grid item><Item style={{display:"grid", alignContent:"center"}}><img src={itr.img} style={{height:"100%", imageRendering:"pixelated"}}/><Text>{itr.label}: {itr.value}%</Text></Item></Grid>
+                  )}
+                  </div>
+              </Grid>
+            </Grid>
+            <Grid item style={{width:"100%", height:"40vh",alignSelf:"center", display:"flex-grid", alignContent:"center", justifyContent:"center"}}>
+                <PieChart
+                  series={[{data: itemUsage, arcLabelMinAngle: 45, highlightScope: { faded: 'global', highlighted: 'item'}}]}
+                  slotProps={{
+                    legend: {
+                      hidden: true
+                    }
+                  }}
+                  sx={{
+                    [`& .${pieArcLabelClasses.root}`]: {
+                      fill: 'white',
+                      fontWeight: 'bold',
+                    },
+                  }}
+                                  />
+            </Grid>
+          </Grid>
+      </Item>)
+      var pokeCounters = activeMon.map(mon => 
+        <Item style={{display:"grid", maxHeight:(hasForms ? "150%" : "150%")}} className='underPanel'>
+          <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
+          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Checks/Counters for " + splitTitleCase(prefix + pokename + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
+          <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%", height:"100%"}} columns={3} row={1}>
+            <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
+                <Grid container width={"100%"} display={"grid"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height:"40vh"}}>
+                  <div style={{height: "400px"}}>
+                  {counters.map(itr =>
+                    <Grid item><Item className='hover-style' onClick={this.activateOverlay.bind(this,nameToID[itr.label.toLowerCase().replace(" ", "-")])} style={{display:"grid", alignContent:"center"}}>
+                      <Grid container style={{display:"grid", gridAutoFlow:"column", columnWidth:"50%"}}>
+                        <Grid item style={{display:"grid"}}><img src={itr.img} style={{height:"100%", imageRendering:"pixelated"}}/><Text style={{fontSize: "16px"}}>{itr.label}</Text><br/></Grid>
+                        <Grid item style={{display:"grid"}}><Text style={{fontSize: "12px"}}>Effectiveness Rating:</Text><br/>
+                          <Gauge width={100} height={100} value={itr.value} valueMax={60}/>
+                        </Grid>
+                      </Grid>
+                    </Item></Grid> //ER = Effectiveness Rating
+                  )}
+                  </div>
+              </Grid>
+            </Grid>
+          </Grid>
+      </Item>)
+      pokeiconPanels = [pokeOverview, pokeLearnset, pokeMoveUsage, pokeItemUsage, pokeCounters]
+      pokeiconTabs = <Grid container style={{paddingLeft:"5%", display:"grid", gridAutoColumns:"3%", gridAutoFlow:"column", gridGap:"4%"}}>
         {tabList.map(tab => 
         <Grid item style={{width:"200%"}}><TabItem className='tab-style' onClick={this.setTab.bind(this, tab.tabID)}>
-          <img src={tab.icon} style={{width:"50%", imageRendering:"pixelated"}}/>
+          <img src={tab.icon} style={{width:"30%", imageRendering:"pixelated"}}/>
           <br/>
-          <Text style={{fontSize: "0.8vw"}}>{tab.name}</Text>
+          <Text style={{fontSize: "0.7vw"}}>{tab.name}</Text>
         </TabItem></Grid>)}
         </Grid>
       pokeiconDropdown = pokeiconPanels[currentTab];
