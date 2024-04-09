@@ -51,6 +51,10 @@ var statNames = {
   'special-defense':'SpD',
   'speed':'Spe'
 }
+var nameLinks = {
+  'keldeo-ordinary': 'keldeo',
+  'keldeo-ordinary-resolute': 'keldeo-resolute'
+}
 var damageFrom = {}
 var typeColours = {
   'normal': '#ABAB9B',
@@ -135,11 +139,17 @@ const TabItem = styled(Paper)(({ theme }) => ({
 }));
 var usageTable = {}
 
-async function getUsage(pokename)
+async function getUsage(p_name)
 {
   for(var generation = 1; generation <= 9; generation++)
   {
+    var pokename = p_name;
     var usage_key = pokename + " - " + generation.toString();
+    console.log("getting comp data for ",pokename);
+    if(generation == 8)
+    {
+      pokename = p_name.replace("-gmax","");
+    }
     var usageData = await smogon.stats(gens.get(generation), pokename);
     usageTable[usage_key] = usageData;
     console.log("added usage data for " + pokename + ":",usageData);
@@ -149,6 +159,7 @@ async function getUsage(pokename)
 function grabUsage(pokename, generation)
 {
   var usage_key = pokename + " - " + generation.toString();
+  console.log(usageTable);
   return usageTable[usage_key]; 
 }
 
@@ -318,6 +329,7 @@ class MainComp extends React.Component {
       getUsage(mon_data[0].name);
       this.addToID(mon_data);
       this.addNameToIMG(mon_data[2], mon_data[0].name);
+      this.addNameToIMG(mon_data[2], mon_data[1].name);
       currently_loading--;
       finished_loaded_pkmn++;
       this.forceUpdate();
@@ -332,7 +344,7 @@ class MainComp extends React.Component {
   {
     nameToID[name] = mon_data[3];
   }
-  async addNameToIMG(img_path, name)
+  async addNameToIMG(img_path, name, base = false)
   {
     nameToIMG[name] = img_path;
   }
@@ -401,6 +413,7 @@ class MainComp extends React.Component {
 
   autosearch()
   {
+    this.activateOverlay(activeID);
     this.search(currentQuery);
   }
 
@@ -478,6 +491,7 @@ class MainComp extends React.Component {
     {
       renderPanel = true;
       var pokename = activeMon[0][0].name;
+      var displayname = activeMon[0][1].name;
       currentForm = Math.min(currentForm, monForms[activeMon[0][3].toString()].length - 1)
       var curmon = monForms[activeMon[0][3].toString()][currentForm];
       var otherforms = [];
@@ -553,6 +567,20 @@ class MainComp extends React.Component {
         }
         console.log("counters:",counters);
       }
+
+      if(counters.length == 0)
+      {
+        tabList.splice(4);
+      }
+      if(itemUsage.length == 0)
+      {
+        tabList.splice(3);
+      }
+      if(moveUsage.length == 0)
+      {
+        tabList.splice(2);
+      }
+
       if(weaknesses.length == 0)
       {
         weaknesses = [['none', -1]];
@@ -627,7 +655,7 @@ class MainComp extends React.Component {
             </Grid>
             
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"}>
-                <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{splitTitleCase(prefix + pokename + "-" + suffix)}</b></Text></h1>
+                <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{splitTitleCase(prefix + displayname + "-" + suffix)}</b></Text></h1>
                 <Text style={{fontSize: "12px", color:("black")}}>Type:</Text>
                 <br style={{display:"block"}}></br>
                 <div style={{margin:"0.5208333333vw", justifyContent: "center", display: "grid", gridAutoFlow: "column", columnWidth: "100%", gridGap: "0.5208333333vw", tableLayout: "fixed"}}>
@@ -665,7 +693,7 @@ class MainComp extends React.Component {
       var pokeLearnset = activeMon.map(mon => 
         <Item style={{display:"grid", maxHeight:(hasForms ? "133%" : "100%")}} className='underPanel'>
           <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
-          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Learnset for " + splitTitleCase(prefix + pokename + "-" + suffix)}</b></Text></h1>
+          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Learnset for " + splitTitleCase(prefix + displayname + "-" + suffix)}</b></Text></h1>
           <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%"}} columns={3} row={1}>
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
                 <Grid container width={"100%"} display={"grid"} height={"300px"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height: "200px", lineHeight:"10px"}}>
@@ -682,7 +710,7 @@ class MainComp extends React.Component {
       var pokeMoveUsage = activeMon.map(mon => 
         <Item style={{display:"grid", maxHeight:(hasForms ? "150%" : "150%")}} className='underPanel'>
           <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
-          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Moveset Data for " + splitTitleCase(prefix + pokename + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
+          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Moveset Data for " + splitTitleCase(prefix + displayname + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
           <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%", height:"100%"}} columns={3} row={1}>
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
                 <Grid container width={"100%"} display={"grid"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height:"40vh"}}>
@@ -714,7 +742,7 @@ class MainComp extends React.Component {
       var pokeItemUsage = activeMon.map(mon => 
         <Item style={{display:"grid", maxHeight:(hasForms ? "150%" : "150%")}} className='underPanel'>
           <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
-          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Item Usage Data for " + splitTitleCase(prefix + pokename + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
+          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Item Usage Data for " + splitTitleCase(prefix + displayname + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
           <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%", height:"100%"}} columns={3} row={1}>
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
                 <Grid container width={"100%"} display={"grid"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height:"40vh"}}>
@@ -746,7 +774,7 @@ class MainComp extends React.Component {
       var pokeCounters = activeMon.map(mon => 
         <Item style={{display:"grid", maxHeight:(hasForms ? "150%" : "150%")}} className='underPanel'>
           <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
-          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Checks/Counters for " + splitTitleCase(prefix + pokename + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
+          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Checks/Counters for " + splitTitleCase(prefix + displayname + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
           <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%", height:"100%"}} columns={3} row={1}>
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
                 <Grid container width={"100%"} display={"grid"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height:"40vh"}}>
