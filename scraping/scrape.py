@@ -47,7 +47,7 @@ def generalcall(id):
     
 def write_dex(id, json_text, species_text, isDef, formName = ""):
     parent = os.getcwd()
-    targ = "data/api/"+str(id)
+    targ = "public/data/api/"+str(id)
     path = os.path.join(parent, targ)
     if os.path.exists(path) == False:
         os.mkdir(path)

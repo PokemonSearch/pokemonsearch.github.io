@@ -20,11 +20,14 @@ import {Generations} from '@pkmn/data';
 import {Smogon} from '@pkmn/smogon';
 
 const gens = new Generations(Dex);
+var sorted_icons = false
 const fetch = window.fetch.bind(window);
 console.log(fetch);
 const smogon = new Smogon(fetch);
 
 const MAX_PKMN = 1025;
+
+const vgcformat = 'gen9vgc2023';
 var typeChart;
 var currentTab = 0;
 var loadingScale = 50;
@@ -145,15 +148,21 @@ async function getUsage(p_name)
   {
     var pokename = p_name;
     var usage_key = pokename + " - " + generation.toString();
-    console.log("getting comp data for ",pokename);
     if(generation == 8)
     {
       pokename = p_name.replace("-gmax","");
     }
     var usageData = await smogon.stats(gens.get(generation), pokename);
     usageTable[usage_key] = usageData;
-    console.log("added usage data for " + pokename + ":",usageData);
+    
   }
+  var vgc_key = pokename + " - " + generation.toString() + " - vgc";
+  var vgcData = await smogon.stats(gens.get(9), p_name, vgcformat);
+  usageTable[vgc_key] = vgcData;
+  if(vgcData != null)
+  {
+    console.log("added vgc data for " + pokename + ":",vgcData);
+  } 
 }
 
 function grabUsage(pokename, generation)
@@ -371,6 +380,7 @@ class MainComp extends React.Component {
     }
     console.log("dmgFrom:",damageFrom);
     data.sort(function(a, b){return a[3] - b[3]});
+    sorted_icons = true;
     this.forceUpdate();
   }
 
@@ -448,9 +458,14 @@ class MainComp extends React.Component {
       loadingText = <div><h3 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"50%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"50px", margin: "auto",zIndex: 11}}>Loading: {Math.round(100*loaded_pkmn/MAX_PKMN)}%</h3>
       <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"0.8333333333vw", margin: "auto",zIndex: 11}}>(don't worry, it loads much, much faster the second time!)</h6></div>;
     }
+    else if(!sorted_icons)
+    {
+      loadingText = <div><h3 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"50%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"50px", margin: "auto",zIndex: 11}}>Sorting Pokemon</h3>
+      <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"0.8333333333vw", margin: "auto",zIndex: 11}}>(this shouldn't take too long)</h6></div>;
+    }
 
     var toRender = [];
-    if(loaded_pkmn >= MAX_PKMN)
+    if(loaded_pkmn >= MAX_PKMN && sorted_icons)
     {
       toRender = activeData;
     }
@@ -843,7 +858,7 @@ async function getData(ID)
   try
   {
     var response = await fetch("data/api/"+ID+"/api.json").then((response) => response.json());
-    var spec_response = await fetch("data/api/"+ID+"/species.json").then((response) => response.json())
+    var spec_response = await fetch("data/api/"+ID+"/species.json").then((response) => response.json());
     var spriteURL = "data/sprites/"+ID+"/front_default.png"
     var data = response;
     var spec_data = spec_response;

@@ -22,7 +22,7 @@ for item in item_list["results"]:
             sprite = requests.get(item_data['sprites']['default'],allow_redirects=True)
             parent = os.getcwd()
             print("saving to " + "data/items/sprites/"+str(item_data['name']))
-            targ = "data/items/sprites/"+str(item_data['name'])
+            targ = "public/data/items/sprites/"+str(item_data['name'])
             path = os.path.join(parent, targ)
             if os.path.exists(path) == False:
                 os.mkdir(path)
@@ -34,7 +34,7 @@ for item in item_list["results"]:
             print("failed to grab sprite from " + item_data['sprites']['default'])
 
 parent = os.getcwd()
-targ = "data/items"
+targ = "public/data/items"
 path = os.path.join(parent, targ)
 f = open(os.path.join(path, "items.txt"), "w")
 f.write(json.dumps(item_txt))
