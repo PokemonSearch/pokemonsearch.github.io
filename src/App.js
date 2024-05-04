@@ -18,6 +18,7 @@ import Fade from '@mui/material/Fade';
 import {Dex} from '@pkmn/dex';
 import {Generations} from '@pkmn/data';
 import {Smogon} from '@pkmn/smogon';
+import { hover } from '@testing-library/user-event/dist/hover';
 
 const gens = new Generations(Dex);
 var sorted_icons = false
@@ -58,6 +59,7 @@ var nameLinks = {
   'keldeo-ordinary': 'keldeo',
   'keldeo-ordinary-resolute': 'keldeo-resolute'
 }
+var pokegifs = {}
 var damageFrom = {}
 var typeColours = {
   'normal': '#ABAB9B',
@@ -108,7 +110,7 @@ var form_whitelist =
     "1007": [],
     "1008": []
 }
-
+var hovering_over = 0
 var smogon_tiers = 
 {
     "gen1":["ou","uu","nu","ubers"],
@@ -442,6 +444,18 @@ class MainComp extends React.Component {
       inSearch = true;
     }
     this.forceUpdate();
+  }
+
+  setMouseOver(id)
+  {
+    hovering_over = id
+    this.forceUpdate()
+  }
+
+  resetMouseOver()
+  {
+    hovering_over = 0
+    this.forceUpdate()
   }
 
   render()
@@ -839,8 +853,8 @@ class MainComp extends React.Component {
           {toRender.map(poke => 
           <Fade in timeout={1500}>
           <Grid item xs={4} sm={2} md={1.5} lg={1} key={poke[3]} className='hover-style'>
-            <Item style={{display:"grid", alignContent:"center", justifyContent:"center"}} className='load-style' onClick={this.activateOverlay.bind(this, poke[3])}>
-            <img src={process.env.PUBLIC_URL + poke[2]} style={{alignContent: "center", imageRendering: "pixelated"}} alt="pokemon data"></img>
+            <Item style={ {height:"96px", display:"grid", alignContent:"center", justifyContent:"center"}} className='load-style' onClick={this.activateOverlay.bind(this, poke[3])} onMouseOver={this.setMouseOver.bind(this, poke[3])} onMouseLeave={this.resetMouseOver.bind(this)}>
+            <img src={process.env.PUBLIC_URL + pokeGIF(poke[3])} style={{alignContent: "center", imageRendering: "pixelated"}} alt="pokemon data"></img>
             </Item>
           </Grid>
           </Fade>
@@ -853,6 +867,8 @@ class MainComp extends React.Component {
 }
 
 
+
+
 async function getData(ID)
 {
   try
@@ -860,6 +876,7 @@ async function getData(ID)
     var response = await fetch("data/api/"+ID+"/api.json").then((response) => response.json());
     var spec_response = await fetch("data/api/"+ID+"/species.json").then((response) => response.json());
     var spriteURL = "data/sprites/"+ID+"/front_default.png"
+    var gifURL = null
     var data = response;
     var spec_data = spec_response;
     return [data, spec_data, spriteURL, ID];
@@ -958,7 +975,20 @@ function pokeSprite(ID)
 }
 
 
-
+function pokeGIF(ID)
+{
+  console.log(ID, hovering_over)
+  if(hovering_over != ID || ID >= 650)
+  {
+    return "data/sprites/"+ID+"/front_default.png";
+  }
+  
+  if((ID.toString() in pokegifs) == false)
+  {
+    pokegifs[ID.toString()] = "data/sprites/"+ID+"/generation-v/front_default.gif";
+  }
+  return pokegifs[ID.toString()]
+}
 
 
 

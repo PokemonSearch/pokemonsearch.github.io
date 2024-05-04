@@ -25,9 +25,9 @@ def addcall(parentID, url, isDef):
     name = x['species']['name']
     id = x['id']
     x['is_default'] = isDef
-    if isDef == False:
+    #if isDef == False:
         #print("printing def: " + str(list(x.keys())))
-        print(name + " >> def: " + str(x['is_default']))
+        #print(name + " >> def: " + str(x['is_default']))
     print(str(id) + ": " + x['name'])
     dex[id] = x
     formName = x['name'].replace(name+"-","")
@@ -36,13 +36,18 @@ def addcall(parentID, url, isDef):
 
 def generalcall(id):
     global done
-    u = pokecall("pokemon-species/"+str(id))
-    x = json.loads(u.text)
-    fullList = []
-    for v in x['varieties']:
-        fullList.append(addcall(id, v['pokemon']['url'], v['is_default']))
-    dex["spe-"+str(id)] = fullList
-    done += 1
+    try:
+        u = pokecall("pokemon-species/"+str(id))
+        x = json.loads(u.text)
+        fullList = []
+        for v in x['varieties']:
+            fullList.append(addcall(id, v['pokemon']['url'], v['is_default']))
+        dex["spe-"+str(id)] = fullList
+        done += 1
+    except:
+        print("failed!")
+        done += 1
+    
     
     
 def write_dex(id, json_text, species_text, isDef, formName = ""):
@@ -67,18 +72,25 @@ def remove_non_ascii_1(text):
     return ''.join(i for i in text if ord(i)<128)
 
 
+USE_MEMORY = False
 
 if __name__ == "__main__":
     done = 0
     dex = {}
-    calls: list[requests.Response] = []
+    if USE_MEMORY:
+        for i in range(contruct_dex.pk_min, contruct_dex.pk_count + 1):
+            dex[i] = open("public/data/api/"+str(i)+"")
+            #UNFINISHED
+    else:
+        calls: list[requests.Response] = []
 
-    for i in range(contruct_dex.pk_min, contruct_dex.pk_count + 1):
-        t = threading.Thread(target=generalcall,args=[i])
-        t.start()
-    
-    while(done < contruct_dex.pk_count - contruct_dex.pk_min + 1):
-        time.sleep(0.1)
+        for i in range(contruct_dex.pk_min, contruct_dex.pk_count + 1):
+            t = threading.Thread(target=generalcall,args=[i])
+            t.start()
+        
+        while(done < contruct_dex.pk_count - contruct_dex.pk_min + 1):
+            print("finished:",done,end="\n")
+            time.sleep(1)
     
     jsonData = json.dumps(dex, indent=4)
     contruct_dex.construct(jsonData)
