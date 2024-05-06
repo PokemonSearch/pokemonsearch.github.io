@@ -25,23 +25,7 @@ console.log(getOperators());
 var desc_keys = Object.keys(getOperators());
 var operator_desc = {}
 var desc_ops = getOperators();
-var i_w = 0
-while(i_w < desc_keys.length)
-{
-  var d_0 = desc_keys[i_w - 1]
-  var d_1 = desc_keys[i_w]
-  if(desc_ops[d_0] == desc_ops[d_1])
-  {
-    desc_keys.splice(desc_keys.indexOf(d_1), 1);
-    i_w--;
-  }
-  i_w++;
-}
-for(var i = 0; i < desc_keys.length; i++)
-{
-  operator_desc[desc_keys[i]] = desc()[desc_ops[desc_keys[i]].name];
-}
-console.log("operator desc:",operator_desc);
+
 var sorted_icons = false
 const fetch = window.fetch.bind(window);
 var offset_data = await fetch("data/sprites/offset_data.json").then((response) => response.json())
@@ -357,7 +341,26 @@ class MainComp extends React.Component {
     super(props);
     this.state = {loadedData: [],
                   acMon: [],
-                  queryText: ''};
+                  queryText: ''
+                };
+            
+    var i_w = 0
+    while(i_w < desc_keys.length)
+    {
+      var d_0 = desc_keys[i_w - 1]
+      var d_1 = desc_keys[i_w]
+      if(desc_ops[d_0] == desc_ops[d_1])
+      {
+        desc_keys.splice(desc_keys.indexOf(d_1), 1);
+        i_w--;
+      }
+      i_w++;
+    }
+    for(var i = 0; i < desc_keys.length; i++)
+    {
+      operator_desc[desc_keys[i]] = desc()[desc_ops[desc_keys[i]].name];
+    }
+    console.log("operator desc:",operator_desc);
   }
 
   setLoad(x)
