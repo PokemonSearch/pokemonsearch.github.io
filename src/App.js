@@ -842,7 +842,7 @@ class MainComp extends React.Component {
         tabID: 4
       },
       {
-        icon: process.env.PUBLIC_URL + 'data/items/sprites/eject-button/eject-button.png',
+        icon: process.env.PUBLIC_URL + 'data/items/sprites/eject-button/gold-bottle-cap.png',
         name: "Teammates",
         tabID: 5
       }
