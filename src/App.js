@@ -12,7 +12,7 @@ import {Gauge} from '@mui/x-charts/Gauge';
 import {useSpring, animated} from 'react-spring';
 import { alignProperty } from '@mui/material/styles/cssUtils';
 import {Text} from 'react-native';
-import { evaluateArgument } from './data_analysis';
+import { evaluateArgument, desc, getOperators } from './data_analysis';
 import { type } from '@testing-library/user-event/dist/type';
 import Fade from '@mui/material/Fade';
 import {Dex} from '@pkmn/dex';
@@ -21,15 +21,59 @@ import {Smogon} from '@pkmn/smogon';
 import { hover } from '@testing-library/user-event/dist/hover';
 
 const gens = new Generations(Dex);
+console.log(getOperators());
+var desc_keys = Object.keys(getOperators());
+var operator_desc = {}
+var desc_ops = getOperators();
+var i_w = 0
+while(i_w < desc_keys.length)
+{
+  var d_0 = desc_keys[i_w - 1]
+  var d_1 = desc_keys[i_w]
+  if(desc_ops[d_0] == desc_ops[d_1])
+  {
+    desc_keys.splice(desc_keys.indexOf(d_1), 1);
+    i_w--;
+  }
+  i_w++;
+}
+for(var i = 0; i < desc_keys.length; i++)
+{
+  operator_desc[desc_keys[i]] = desc()[desc_ops[desc_keys[i]].name];
+}
+console.log("operator desc:",operator_desc);
 var sorted_icons = false
 const fetch = window.fetch.bind(window);
+var offset_data = await fetch("data/sprites/offset_data.json").then((response) => response.json())
+console.log("offset data",offset_data["1"][0])
 console.log(fetch);
 const smogon = new Smogon(fetch);
 
 const MAX_PKMN = 1025;
 
+window.mobileCheck = function() {
+  let check = false;
+  (function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
+  return check;
+};
+
+const loadImage = path => {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = 'Anonymous' // to avoid CORS if used with Canvas
+    img.src = path
+    img.onload = () => {
+      resolve(img)
+    }
+    img.onerror = e => {
+      reject(e)
+    }
+  })
+}
+
 const vgcformat = 'gen9vgc2023';
 var typeChart;
+var helpStyle = ["none"];
 var currentTab = 0;
 var loadingScale = 50;
 var currentTab = 0;
@@ -43,6 +87,7 @@ var currentForm = 1;
 var activeMon = [];
 var monForms = {};
 var inSearch = false;
+var helpMenu = false;
 var activeData = [];
 var pokeStats= [];
 var nameToID = {}
@@ -60,6 +105,7 @@ var nameLinks = {
   'keldeo-ordinary-resolute': 'keldeo-resolute'
 }
 var pokegifs = {}
+var addedgifs = {}
 var damageFrom = {}
 var typeColours = {
   'normal': '#ABAB9B',
@@ -111,6 +157,7 @@ var form_whitelist =
     "1008": []
 }
 var hovering_over = 0
+
 var smogon_tiers = 
 {
     "gen1":["ou","uu","nu","ubers"],
@@ -123,6 +170,45 @@ var smogon_tiers =
     "gen8":["ou","uu","ru","nu","pu","ubers","lc"],
     "gen9":["ou","uu","ru","nu","pu","ubers","lc"]
 }
+
+//"operator" = [[valid comparators], [valid names]]
+var randomOperatorSheet = 
+{
+    "type":[["="],Object.keys(typeColours)],
+
+    "color":[["="],["red","blue","green","black","white","purple","pink","yellow"]],
+
+    "weight":[[">","<"],numberRange(500, 10)],
+
+    "hp":[[">","<"],numberRange(150, 50)],
+
+    "atk":[[">","<"],numberRange(150, 50)],
+
+    "def":[[">","<"],numberRange(150, 50)],
+
+    "spa":[[">","<"],numberRange(150, 50)],
+
+    "spd":[[">","<"],numberRange(150, 50)],
+
+    "spe":[[">","<"],numberRange(150, 50)],
+    "speed":[[">","<"],numberRange(150, 50)],
+
+    "bst":[[">","<"],[350,400,450,500,510,520,530,540,550,560,570,580,590,600]],
+
+    "gen":[[">","=","<"],[1,2,3,4,5,6,7,8,9]],
+
+    "natdex":[[">","<"], [400,500,600,700]],
+
+    "learns":[["="],["tackle","shadow-ball","flamethrower","grass-knot","thunderbolt","earthquake"]],
+
+    "weakness":[["="],Object.keys(typeColours)],
+
+    "resist":[["="],Object.keys(typeColours)],
+
+    "immune":[["="],["normal","fighting","ghost","psychic","poison","ground","electric"]]
+}
+
+
 const delay = ms => new Promise(res => setTimeout(res, ms));
 var currentQuery = ""
 const Item = styled(Paper)(({ theme }) => ({
@@ -143,6 +229,11 @@ const TabItem = styled(Paper)(({ theme }) => ({
   borderTopRightRadius: 0
 }));
 var usageTable = {}
+
+function numberRange(endAt, startAt = 0) {
+  var size = endAt - startAt;
+  return [...Array(size).keys()].map(i => i + startAt);
+}
 
 async function getUsage(p_name)
 {
@@ -174,6 +265,17 @@ function grabUsage(pokename, generation)
   return usageTable[usage_key]; 
 }
 
+function getOffset(pokeID, index)
+{
+  if(pokeID == hovering_over && pokeID.toString() in pokegifs && pokeID.toString() in offset_data)
+  {
+    return offset_data[pokeID.toString()][index]
+  }
+  else
+  {
+    return 0
+  }
+}
 
 
 
@@ -272,6 +374,7 @@ class MainComp extends React.Component {
   {
     currentQuery = x
   }
+
   async get_data(i)
   {
     if(i > loaded_pkmn)
@@ -359,6 +462,11 @@ class MainComp extends React.Component {
   {
     nameToIMG[name] = img_path;
   }
+  async setHelpStyle(val)
+  {
+    helpStyle = [val];
+    this.forceUpdate();
+  }
   async load_data()
   {
     if(startedLoading)
@@ -383,6 +491,9 @@ class MainComp extends React.Component {
     console.log("dmgFrom:",damageFrom);
     data.sort(function(a, b){return a[3] - b[3]});
     sorted_icons = true;
+    var query = randomQuery();
+    this.forceQuery(query);
+    this.autosearch();
     this.forceUpdate();
   }
 
@@ -391,10 +502,20 @@ class MainComp extends React.Component {
     currentForm = formNum;
     this.forceUpdate();
   }
+
+  forceQuery(x)
+  {
+    document.getElementById("pokesearchbar").value = x;
+    this.setQuery(x);
+  }
   
 
   activateOverlay(ID)
   {
+    if(window.mobileCheck())
+    {
+      return;
+    }
     if(activeID == ID)
     {
       activeMon = [];
@@ -458,6 +579,50 @@ class MainComp extends React.Component {
     this.forceUpdate()
   }
 
+  async addToGIFS(ID)
+  {
+    if(ID >= 650 || (ID.toString() in addedgifs))
+    {
+      return; 
+    }
+    addedgifs[ID.toString()] = true;
+    var p = "data/sprites/"+ID+"/generation-v/front_default.gif"
+    var p_png = "data/sprites/"+ID+"/front_default.png"
+    var dx = 0
+    var dy = 0
+
+    var gif_img = await loadImage(p);
+    var png_img = await loadImage(p_png);
+    
+    dx = png_img.width - gif_img.width
+    dy = png_img.height - gif_img.height
+    pokegifs[ID.toString()] = [p, dx, dy];
+    this.forceUpdate()
+  }
+  setHelp(val)
+  {
+    helpMenu = val;
+    this.forceUpdate(); 
+  }
+  internalPokeGIF(ID, index)
+  {
+    if(hovering_over != ID || ID >= 650)
+    {
+      return ["data/sprites/"+ID+"/front_default.png", 0, 0][index];
+    }
+
+    if((ID.toString() in pokegifs) == false)
+    {
+      this.addToGIFS(ID);
+      return ["data/sprites/"+ID+"/front_default.png", 0, 0][index];
+    }
+    else
+    {
+      console.log("deltas:",pokegifs[ID.toString()]);
+      return pokegifs[ID.toString()][index];
+    }
+  }
+
   render()
   {
     
@@ -477,6 +642,8 @@ class MainComp extends React.Component {
       loadingText = <div><h3 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"50%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"50px", margin: "auto",zIndex: 11}}>Sorting Pokemon</h3>
       <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"0.8333333333vw", margin: "auto",zIndex: 11}}>(this shouldn't take too long)</h6></div>;
     }
+
+    var helpMenu = <h3></h3>
 
     var toRender = [];
     if(loaded_pkmn >= MAX_PKMN && sorted_icons)
@@ -834,27 +1001,51 @@ class MainComp extends React.Component {
         </Grid>
       pokeiconDropdown = pokeiconPanels[currentTab];
     }
-
+    var modalHS = helpStyle
     return (
       <div className="App" style={{display:"grid"}}>
+        <Item className='modal-content' style={{fontSize: "0.4vw", display: modalHS, position: "fixed", zIndex: 20, justifySelf: "center", height: "90%", width: "90%", alignSelf:"start", margin:"auto", marginTop:"1%"}}>
+        <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.setHelpStyle.bind(this, "none")}>Close</Item>
+            <h1 style={{color:"#2e2e2e"}}>
+                <div style={{fontSize: "2vw", fontFamily: "bwFont"}}>Welcome to CheeseMans' PokéSearch Engine!</div><br/><br/>
+                {`This website was designed to be used as a tool to sort Pokemon by their various attributes.`}<br/>
+                {`You can also take a look at each one by clicking on their icon, and the menu can be closed by pressing the "Close" button or by clicking on the same Pokemon icon.`}<br/>
+                {`Using the search bar, the list of Pokemon can be filtered. Each filter should be seperated by a singular comma (","). (i.e: "atk > 70, hp < 60, gen = 5")`}<br/>
+                {`Pokemon will be hidden if they do not fit ALL of the filters. `}
+                {`The list of available filters includes:`}<br/><br/>
+                <div style={{overflow:"hidden"}}><ul style={{paddingLeft:"0%", textAlign:"left", columns:3}}>{desc_keys.map(d => 
+                  <li style={{display:"inline-block"}}><div style={{fontWeight: "bolder", fontSize:"1.2vw"}}>{titleCase(d) + ":"}<div style={{fontSize:"0.8vw",color:"#4f4f4f"}}>{operator_desc[d]}</div></div><br/></li>
+                )}</ul></div>
+            </h1>
+        </Item>
         <form style={{display:"grid"}} onSubmit={event => {event.preventDefault(); this.autosearch()}}>
-        <input style={{borderRadius: "1.041666667vw", zIndex:12, position: 'fixed', justifySelf: "center", borderWidth:"1px", width:"75%", margin:"auto", display:"block", transform: "translate(0px, 0.5208333333vw)", paddingLeft: "1.041666667vw", fontFamily: "bwFont"}}
-        type="text" placeholder='enter search (i.e type=fire atk>120)' onChange={event => {this.setQuery(event.target.value)}}/>
+        <input id='pokesearchbar' style={{borderRadius: "1.041666667vw", zIndex:12, position: 'fixed', justifySelf: "center", borderWidth:"1px", width:"75%", margin:"auto", display:"block", transform: "translate(0px, 0.5208333333vw)", paddingLeft: "1.041666667vw", fontFamily: "bwFont"}}
+        type="text" placeholder='enter search (i.e type = fire, atk > 120)' onChange={event => {this.setQuery(event.target.value)}}/>
         </form>
+        <Item style={{width:"5%", justifySelf: "left"}} className='button-style' onClick={this.setHelpStyle.bind(this, "block")}>Help</Item>
         {loadingText}
         <div className='pokePanel' fontFamily={"bwFont"} style={{zIndex: 10, height:(renderPanel ? "40%": "0%")}}>
           {pokeiconDropdown}
           {pokeiconTabs}
         </div>
         <br></br>
-        <h2 style={{textAlign: "center", fontFamily:"bwFont"}}>PokéSearch</h2>
+        
+        <div style={{display:"flex-grid", rowGap:"0px", gridAutoFlow:"row"}}>
+        <h2 style={{textAlign: "center", fontFamily:"bwFont"}}>PokéSearch 
+        </h2><p style={{textAlign: "center", fontFamily:"bwFont", fontSize:"10px"}}>Powered by Smogon & PokéAPI</p></div>
+        
+        
+        
+        <h5 style={{textAlign: "center"}}>{window.mobileCheck() ? "Limited support for mobile devices" : ""}</h5>
         <body>
         <Grid container spacing={1} style={{margin:"30px auto 0"}}>
           {toRender.map(poke => 
           <Fade in timeout={1500}>
           <Grid item xs={4} sm={2} md={1.5} lg={1} key={poke[3]} className='hover-style'>
             <Item style={ {height:"96px", display:"grid", alignContent:"center", justifyContent:"center"}} className='load-style' onClick={this.activateOverlay.bind(this, poke[3])} onMouseOver={this.setMouseOver.bind(this, poke[3])} onMouseLeave={this.resetMouseOver.bind(this)}>
-            <img src={process.env.PUBLIC_URL + pokeGIF(poke[3])} style={{alignContent: "center", imageRendering: "pixelated"}} alt="pokemon data"></img>
+            <img src={process.env.PUBLIC_URL + this.internalPokeGIF(poke[3], 0)} style={{alignContent: "center", imageRendering: "pixelated", overflow: "clip",
+              objectPosition: ((getOffset(poke[3], 0) - getOffset(poke[3], 2)/2) + "px " + (-getOffset(poke[3], 1) + getOffset(poke[3], 3)/2) + "px")}} 
+              alt="pokemon data"></img>
             </Item>
           </Grid>
           </Fade>
@@ -910,17 +1101,58 @@ function splitTitleCase(/**@type String */str)
     return final;
 }
 
+function randomElement(arr)
+{
+  var ind = Math.round(Math.random()*(arr.length - 1));
+  console.log("using index",ind);
+  return arr[ind]
+}
+
+function randomQuery()
+{
+  var num = 2 + Math.round(Math.random()*1);
+  var query = "";
+  var ops = Object.keys(randomOperatorSheet);
+  for(var i = 0; i < num; i++)
+  {
+    var func = randomElement(ops);
+    console.log("found",ops, ops.length, func);
+    ops.splice(ops.indexOf(func), 1);
+    var comps = randomOperatorSheet[func][0];
+    var vals = randomOperatorSheet[func][1];
+    console.log(func, comps, vals);
+    var comp = randomElement(comps);
+    var val = randomElement(vals);
+    query += func + " " + comp + " " + val;
+    if(i < num - 1)
+    {
+      query += ", "
+    }
+  }
+  
+  
+  
+  return query;
+}
+
 function analysis(searchQuery)
 {
+    if(searchQuery.trimEnd().trimStart().toLowerCase() == "random")
+    {
+      var query = randomQuery();
+      searchQuery = query;  
+      document.getElementById("pokesearchbar").value = query;
+    } 
     var chosenData = []
     if(searchQuery == "")
     {
-        chosenData = data;
+        chosenData = [];
     }
     else
     {
         var tempList = []
-        var args = searchQuery.trimEnd().trimStart().split(" ");
+        var args = searchQuery.trimEnd().trimStart().replaceAll(" ","").split(",");
+
         for(var i = 0; i < args.length; i++)
         {
             tempList = tempList.concat(evaluateArgument(args[i], data, monForms, damageFrom));
@@ -928,7 +1160,7 @@ function analysis(searchQuery)
         var endList = []
         if(tempList.length == 0)
         {
-            endList = data;
+            endList = [];
         }
         else
         {
@@ -975,18 +1207,30 @@ function pokeSprite(ID)
 }
 
 
-function pokeGIF(ID)
+async function pokeGIF(ID)
 {
   console.log(ID, hovering_over)
   if(hovering_over != ID || ID >= 650)
   {
-    return "data/sprites/"+ID+"/front_default.png";
+    return ["data/sprites/"+ID+"/front_default.png", 0, 0];
   }
   
-  if((ID.toString() in pokegifs) == false)
+  if((ID.toString() in pokegifs) == false && (ID.toString() in addedgifs) == false)
   {
-    pokegifs[ID.toString()] = "data/sprites/"+ID+"/generation-v/front_default.gif";
+    addedgifs[ID.toString()] = true;
+    var p = "data/sprites/"+ID+"/generation-v/front_default.gif"
+    var p_png = "data/sprites/"+ID+"/front_default.png"
+    var dx = 0
+    var dy = 0
+
+    var gif_img = await loadImage(p);
+    var png_img = await loadImage(p_png);
+    
+    dx = png_img.width - gif_img.width
+    dy = png_img.height - gif_img.height
+    pokegifs[ID.toString()] = [p, dx, dy];
   }
+
   return pokegifs[ID.toString()]
 }
 

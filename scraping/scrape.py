@@ -89,8 +89,8 @@ if __name__ == "__main__":
             t.start()
         
         while(done < contruct_dex.pk_count - contruct_dex.pk_min + 1):
-            print("finished:",done,end="\n")
-            time.sleep(1)
+            #print("finished:",done,end="\n")
+            time.sleep(0.1)
     
     jsonData = json.dumps(dex, indent=4)
     contruct_dex.construct(jsonData)

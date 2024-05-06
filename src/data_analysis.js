@@ -324,24 +324,35 @@ var operators =
     "immune":checkImmune
 }
 
-var desc =
+function desc()
 {
-    "checkName":"The name of the Pokemon's default form (i.e: Pikachu, Zoroark, Dunsparce)",
-    "checkType":"The elemental type(s) of the Pokemon (i.e: Fire, Water, Grass)",
-    "checkCol":"The internally specified colour of the Pokemon (i.e: Green, Purple, White)",
-    "checkWeight":"The internally specified weight of the Pokemon (i.e: 300, 5, 999)",
-    "checkHP":"The base stat for the Pokemon's HP stat",
-    "checkAtk":"The base stat for the Pokemon's ATTACK stat",
-    "checkDef":"The base stat for the Pokemon's DEFENSE stat",
-    "checkSpA":"The base stat for the Pokemon's SPECIAL ATTACK stat",
-    "checkSpD":"The base stat for the Pokemon's SPECIAL DEFENSE stat",
-    "checkSpe":"The base stat for the Pokemon's SPEED stat",
-    "checkBST":"The base stat total of a Pokemon (The sum of all of its base stats for HP, Atk, SpA, Def, SpD, Spe)",
-    "checkCR":"The internally specified capture rate of a Pokemon (i.e: 3, 255, 37)",
-    "checkForms":"The number of forms a Pokemon has (Including its default form)",
-    "checkGeneration":"The generation of mainline Pokemon games that the Pokemon was introduced in (i.e: 1, 5, 8)",
-    "checkID":"The national dex number of the Pokemon (i.e: 1, 76, 904)",
-    "checkLearnset":"The learnset of a pokemon. Checks if equated move is in the learnset (i.e learns=rock-throw)"
+    return {
+        "checkName":"The name of the Pokemon's default form (i.e: name = pikachu, name = zoroark, name = dunsparce)",
+        "checkType":"The elemental type(s) of the Pokemon (i.e: type = ground, type = dragon)",
+        "checkCol":"The internally specified colour of the Pokemon (i.e: color = purple)",
+        "checkWeight":"The internally specified weight of the Pokemon (i.e: weight = 300, weight < 100)",
+        "checkHP":"The base stat for the Pokemon's HP stat",
+        "checkAtk":"The base stat for the Pokemon's ATTACK stat",
+        "checkDef":"The base stat for the Pokemon's DEFENSE stat",
+        "checkSpA":"The base stat for the Pokemon's SPECIAL ATTACK stat",
+        "checkSpD":"The base stat for the Pokemon's SPECIAL DEFENSE stat",
+        "checkSpe":"The base stat for the Pokemon's SPEED stat",
+        "checkBST":"The base stat total of a Pokemon (The sum of all of its base stats for HP, Atk, SpA, Def, SpD, Spe)",
+        "checkCR":"The capture rate of a Pokemon (i.e: capture = 3, capture < 255)",
+        "checkForms":"The number of forms a Pokemon has (Including its default form) (i.e forms > 3)",
+        "checkGeneration":"The generation of mainline Pokemon games that the Pokemon was introduced in (i.e: gen = 1, gen > 5, gen < 8)",
+        "checkID":"The national dex number of the Pokemon (i.e: id = 1, id > 76, id < 904)",
+        "checkLearnset":"The learnset of a Pokemon. Checks if equated move is in the learnset (i.e learns = rock-throw)",
+        "checkWeakness":"Check if the Pokemon is weak to the equated type (i.e weak = fire)",
+        "checkResist":"Check if the Pokemon resists the equated type (i.e resist = water)",
+        "checkNeutral":"Check if the Pokemon is not weak to AND does not resist the equated type (i.e neutral = grass)",
+        "checkImmune":"Check if the Pokemon is immune to the equated type (i.e immune = electric)"
+    }
+}
+
+function getOperators()
+{
+    return operators
 }
 
 function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */dataList, formDict, damageFrom)
@@ -378,7 +389,7 @@ function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */dataList,
     for(var i = 0; i < dataList.length; i++)
     {
         console.log("AN forms: ",formDict[toString(dataList[i][3])]);
-        if(operators[operator]({data: dataList[i][0], spec_data: dataList[i][1], forms: formDict[toString(dataList[i][3])], id: dataList[i][3], dmgfrom: damageFrom}, comparator, value))
+        if(operators[operator]({data: dataList[i][0], spec_data: dataList[i][1], forms: formDict[toString(dataList[i][3])], id: dataList[i][3], ID: dataList[i][3], dmgfrom: damageFrom}, comparator, value))
         {
             finalList.push(dataList[i]);
         }
@@ -387,4 +398,4 @@ function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */dataList,
     return finalList;
 }
 
-module.exports = {evaluateArgument};
+module.exports = {evaluateArgument, desc, getOperators};
