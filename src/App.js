@@ -145,7 +145,7 @@ const loadImage = path => {
 
 const vgcformat = 'gen9vgc2023';
 var typeChart;
-var helpStyle = ["none"];
+var helpStyle = ["block"];
 var currentTab = 0;
 var loadingScale = 50;
 var currentTab = 0;
