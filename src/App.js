@@ -146,6 +146,10 @@ const loadImage = path => {
 const vgcformat = 'gen9vgc2023';
 var typeChart;
 var helpStyle = ["block"];
+if(window.mobileCheck())
+{
+  helpStyle = ["none"];
+}
 var currentTab = 0;
 var loadingScale = 50;
 var currentTab = 0;
@@ -781,13 +785,23 @@ class MainComp extends React.Component {
     var loadingText = <h3></h3>;
     if(loaded_pkmn < MAX_PKMN)
     {
+      var botText = "(don't worry, it loads much, much faster the second time!)"
+      if(window.mobileCheck())
+      {
+        botText = "";
+      }
       loadingText = <div><h3 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"50%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"50px", margin: "auto",zIndex: 11}}>Loading: {Math.round(100*loaded_pkmn/MAX_PKMN)}%</h3>
-      <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"0.8333333333vw", margin: "auto",zIndex: 11}}>(don't worry, it loads much, much faster the second time!)</h6></div>;
+      <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"0.8333333333vw", margin: "auto",zIndex: 11}}>{botText}</h6></div>;
     }
     else if(!sorted_icons)
     {
+      var botText = "(this shouldn't take too long)"
+      if(window.mobileCheck())
+      {
+        botText = "";
+      }
       loadingText = <div><h3 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"50%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"50px", margin: "auto",zIndex: 11}}>Sorting Pokemon</h3>
-      <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"0.8333333333vw", margin: "auto",zIndex: 11}}>(this shouldn't take too long)</h6></div>;
+      <h6 style={{textAlign: "center", alignContent:"center",justifyContent:"center",position: "fixed", top:"57%", left:"50%",transform:"translate(-50%, -50%)", fontSize:"0.8333333333vw", margin: "auto",zIndex: 11}}>{botText}</h6></div>;
     }
 
     var helpMenu = <h3></h3>
@@ -1233,7 +1247,7 @@ class MainComp extends React.Component {
     return (
       <div className="App" style={{display:"grid", overflowX: "hidden"}}>
         <Item className='modal-content' style={{fontSize: "0.4vw", display: modalHS, position: "fixed", zIndex: 20, justifySelf: "center", height: "90%", width: "90%", alignSelf:"start", margin:"auto", marginTop:"1%"}}>
-        <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.setHelpStyle.bind(this, "none")}>Close</Item>
+        <Item style={{width:"5%", justifySelf: "right", fontSize: "vw"}} className='button-style' fontFamily="bwFont" onClick={this.setHelpStyle.bind(this, "none")}>Close</Item>
             <Text style={{color:"#2e2e2e"}}>
                 <div style={{fontSize: "2vw", fontFamily: "bwFont", justifySelf:"center", justifyContent:"center",textAlign:"center"}}>Welcome to CheeseMans' PokéSearch Engine!</div><br/><br/>
                 {`This website was designed to be used as a tool to sort Pokemon by their various attributes.`}<br/>
