@@ -164,6 +164,7 @@ var activeData = [];
 var pokeStats= [];
 var nameToID = {}
 var nameToIMG = {}
+var nameToComp = {}
 var statNames = {
   'hp':'HP',
   'attack':'Atk',
@@ -200,7 +201,8 @@ var typeColours = {
   'fairy': '#EE99EE',
   'none': "#2F2E2E"
 }
-
+var typeColourList = Object.keys(typeColours);
+typeColourList.splice(typeColourList.indexOf('none'), 1);
 var statNameVals = [
   'HP',
   'Atk',
@@ -246,7 +248,7 @@ var smogon_tiers =
 //"operator" = [[valid comparators], [valid names]]
 var randomOperatorSheet = 
 {
-    "type":[["="],Object.keys(typeColours)],
+    "type":[["="],typeColourList],
 
     "color":[["="],["red","blue","green","black","white","purple","pink","yellow"]],
 
@@ -263,7 +265,6 @@ var randomOperatorSheet =
     "spd":[[">","<"],numberRange(150, 50)],
 
     "spe":[[">","<"],numberRange(150, 50)],
-    "speed":[[">","<"],numberRange(150, 50)],
 
     "bst":[[">","<"],[350,400,450,500,510,520,530,540,550,560,570,580,590,600]],
 
@@ -273,9 +274,9 @@ var randomOperatorSheet =
 
     "learns":[["="],["tackle","shadow-ball","flamethrower","grass-knot","thunderbolt","earthquake"]],
 
-    "weakness":[["="],Object.keys(typeColours)],
+    "weakness":[["="],typeColourList],
 
-    "resist":[["="],Object.keys(typeColours)],
+    "resist":[["="],typeColourList],
 
     "immune":[["="],["normal","fighting","ghost","psychic","poison","ground","electric"]]
 }
@@ -511,8 +512,11 @@ class MainComp extends React.Component {
               data: form_data_response
           }
           getUsage(fullName, 9);
+          this.addNameToCompName(fullName);
           this.addNameToID(mon_data, fullName);
+          console.log("added alt form " + fullName + " to images");
           this.addNameToIMG(path, fullName);
+          
           var form_typeList = [];
           for(var tv = 0; tv < form_data_response.types.length; tv++)
           {
@@ -532,9 +536,11 @@ class MainComp extends React.Component {
       
       console.log('added type data to ID',i.toString());
       getUsage(mon_data[0].name);
+      this.addNameToCompName(mon_data[0].name);
       this.addToID(mon_data);
       this.addNameToIMG(mon_data[2], mon_data[0].name);
       this.addNameToIMG(mon_data[2], mon_data[1].name);
+      
       currently_loading--;
       finished_loaded_pkmn++;
       this.forceUpdate();
@@ -543,15 +549,65 @@ class MainComp extends React.Component {
 
   async addToID(mon_data)
   {
-    nameToID[mon_data[0].name] = mon_data[3];
+    this.addNameToID(mon_data, mon_data[0].name);
   }
   async addNameToID(mon_data, name)
   {
     nameToID[name] = mon_data[3];
+    nameToID[nameToComp[name]] = mon_data[3];
+    if(name.toLowerCase().startsWith("arceus"))
+    {
+      var types = typeColourList;
+      for(var i = 0; i < types.length; i++)
+      {
+        nameToID[name+"-"+types[i]] = mon_data[3]; 
+      }
+    }
+    console.log("id process for",name);
+    if(name.toLowerCase().endsWith("-incarnate"))
+    {
+      nameToID[name.replaceAll("-incarnate","")] = mon_data[3];
+      console.log(name.replaceAll("-incarnate",""),"=",mon_data[3]);
+    }
   }
   async addNameToIMG(img_path, name, base = false)
   {
     nameToIMG[name] = img_path;
+    nameToIMG[nameToComp[name]] = img_path;
+    if(name.toLowerCase().startsWith("arceus"))
+    {
+      var types = typeColourList;
+      for(var i = 0; i < types.length; i++)
+      {
+        nameToIMG[name+"-"+types[i]] = img_path; 
+      }
+      
+    }
+  }
+  addNameToCompName(name, base = false)
+  {
+    
+    if(name.toLowerCase().startsWith("ogerpon"))
+    {
+      nameToComp[name] = name.replaceAll("-mask",""); 
+      return;
+    }
+
+    if(name.toLowerCase().startsWith("tauros-paldea"))
+    {
+      nameToComp[name] = name.replaceAll("-breed", ""); 
+      console.log("exception for",name.replaceAll("-breed", ""));
+      return;
+    }
+
+    if(name.toLowerCase().startsWith("necrozma-"))
+    {
+      nameToComp[name] = name.replaceAll("-mane", ""); 
+      return;
+    }
+
+    
+    nameToComp[name] = name;
   }
   async setHelpStyle(val)
   {
@@ -735,12 +791,26 @@ class MainComp extends React.Component {
     }
 
     var helpMenu = <h3></h3>
-
+    var noResults = <h3/>
     var toRender = [];
     if(loaded_pkmn >= MAX_PKMN && sorted_icons)
     {
       toRender = activeData;
+      if(activeData.length <= 0)
+      {
+        var helptxt = "Try a different search"
+        if(currentQuery == "")
+        {
+          helptxt = 'If you want to see all '+MAX_PKMN.toString()+' Pokémon, enter "all" into the search bar'
+        }
+        noResults = (<div>
+          <Text style={{fontSize: "3vw", textAlign:"center",justifyContent:"center",alignContent:"center", alignSelf: "center"}}><b>No Results</b></Text><br/>
+        <Text style={{fontSize: "vw", textAlign:"center",justifyContent:"center",alignContent:"center", alignSelf: "center"}}>({helptxt})</Text>
+        </div>
+      )
+      }
     }
+    
     var pokeiconDropdown = <p></p>;
     var pokeiconPanels = []
     var pokeiconTabs = <p></p>;
@@ -770,6 +840,11 @@ class MainComp extends React.Component {
         icon: process.env.PUBLIC_URL + 'data/items/sprites/eject-button/eject-button.png',
         name: "Counters",
         tabID: 4
+      },
+      {
+        icon: process.env.PUBLIC_URL + 'data/items/sprites/eject-button/eject-button.png',
+        name: "Teammates",
+        tabID: 5
       }
     ]
 
@@ -778,6 +853,7 @@ class MainComp extends React.Component {
     {
       renderPanel = true;
       var pokename = activeMon[0][0].name;
+      
       var displayname = activeMon[0][1].name;
       currentForm = Math.min(currentForm, monForms[activeMon[0][3].toString()].length - 1)
       var curmon = monForms[activeMon[0][3].toString()][currentForm];
@@ -791,7 +867,12 @@ class MainComp extends React.Component {
       }
       console.log(otherforms);
       var hasForms = otherforms.length > 0;
-      
+      var pokeformname = "";
+      if(currentForm > 0)
+      {
+        pokeformname = monForms[activeMon[0][3].toString()][currentForm].name;
+        console.log("form name:", pokeformname);
+      }
       var pokemoves = monForms[activeMon[0][3].toString()][currentForm].data.moves;
       console.log(pokemoves);
 
@@ -803,12 +884,14 @@ class MainComp extends React.Component {
       var moveUsage = [];
       var itemUsage = [];
       var counters = [];
+      var teammates = [];
       var compIterations = [];
       var compName = pokename;
       if(currentForm > 0)
       {
         compName = monForms[activeMon[0][3].toString()][currentForm].fullname;
       }
+      compName = nameToComp[compName];
       console.log("comp name:",compName, monForms[activeMon[0][3].toString()][currentForm]);
       var chosenGen = 9;
       compData = null;
@@ -853,8 +936,27 @@ class MainComp extends React.Component {
           });
         }
         console.log("counters:",counters);
+
+        var teammateKeys = Object.keys(compData.teammates);
+        for(var m = 0; m < teammateKeys.length; m++)
+        {
+          if(compData.teammates[teammateKeys[m]] < 0.1){continue;}
+          var teammateName = teammateKeys[m].toLowerCase().replace(" ","-");
+          teammates.push({id:m, 
+            value:(100*compData.teammates[teammateKeys[m]]).toFixed(2), 
+            label: teammateKeys[m], 
+            img: (process.env.PUBLIC_URL + nameToIMG[teammateName]),
+            p: compData.teammates[teammateKeys[m]][1],
+            d: compData.teammates[teammateKeys[m]][2]
+          });
+        }
+        console.log("teammates:",teammates);
       }
 
+      if(teammates.length == 0)
+      {
+        tabList.splice(4);
+      }
       if(counters.length == 0)
       {
         tabList.splice(4);
@@ -942,7 +1044,8 @@ class MainComp extends React.Component {
             </Grid>
             
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"}>
-                <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{splitTitleCase(prefix + displayname + "-" + suffix)}</b></Text></h1>
+                <Text style={{ fontSize: "1.666666667vw"}}><b>{splitTitleCase(displayname)}</b></Text><br style={{display:"block", margin:"0em"}}/><Text style={{ fontSize: "1vw"}}><b>{pokeformname}</b></Text>
+                <br style={{display:"block", margin:"0em"}}/>
                 <Text style={{fontSize: "12px", color:("black")}}>Type:</Text>
                 <br style={{display:"block"}}></br>
                 <div style={{margin:"0.5208333333vw", justifyContent: "center", display: "grid", gridAutoFlow: "column", columnWidth: "100%", gridGap: "0.5208333333vw", tableLayout: "fixed"}}>
@@ -980,7 +1083,7 @@ class MainComp extends React.Component {
       var pokeLearnset = activeMon.map(mon => 
         <Item style={{display:"grid", maxHeight:(hasForms ? "133%" : "100%")}} className='underPanel'>
           <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
-          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Learnset for " + splitTitleCase(prefix + displayname + "-" + suffix)}</b></Text></h1>
+          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Learnset for " + splitTitleCase(prefix + displayname + "-" + suffix)}</b></Text><br/></h1>
           <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%"}} columns={3} row={1}>
             <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
                 <Grid container width={"100%"} display={"grid"} height={"300px"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height: "200px", lineHeight:"10px"}}>
@@ -1081,7 +1184,41 @@ class MainComp extends React.Component {
             </Grid>
           </Grid>
       </Item>)
-      pokeiconPanels = [pokeOverview, pokeLearnset, pokeMoveUsage, pokeItemUsage, pokeCounters]
+      var pokeTeammates = activeMon.map(mon => 
+        <Item style={{display:"grid", maxHeight:(hasForms ? "150%" : "150%")}} className='underPanel'>
+          <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.activateOverlay.bind(this, activeID)}>Close</Item>
+          <h1 fontFamily={"bwFont"}><Text style={{ fontSize: "1.666666667vw"}}><b>{"Common Teammates for " + splitTitleCase(prefix + displayname + "-" + suffix) + " (Smogon Singles, Gen " + chosenGen + ")"}</b></Text></h1>
+          <h5 fontFamily={"bwFont"}><Text style={{ fontSize: "0.7vw"}}><b>{"Note: Only usages more than or equal to 10% are shown, so percentages will not total to any standard value"}</b></Text></h5>
+          <Grid container style={{justifyContent: "center", width:"100%", display:"grid", gridAutoFlow: "column", gridAutoRows: "max-content", gridAutoColumns: "50%", paddingLeft:"5%", paddingRight: "5%", height:"100%"}} columns={3} row={1}>
+            <Grid item display={"flex-grid"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
+                <Grid container width={"100%"} display={"grid"} paddingLeft={"5%"} style={{overflowY: "scroll", overflowX: "hidden", height:"40vh"}}>
+                  <div style={{height: "400px"}}>
+                  {teammates.map(itr =>
+                    <Grid item><Item style={{display:"grid", alignContent:"center"}} onClick={this.activateOverlay.bind(this,nameToID[itr.label.toLowerCase().replace(" ", "-")])} className='hover-style'
+                    ><img src={itr.img} style={{height:"100%", imageRendering:"pixelated"}}/><Text>{itr.label}: {itr.value}%</Text></Item></Grid>
+                  )}
+                  </div>
+              </Grid>
+            </Grid>
+            <Grid item style={{width:"100%", height:"40vh",alignSelf:"center", display:"flex-grid", alignContent:"center", justifyContent:"center"}}>
+                <PieChart
+                  series={[{data: teammates, arcLabelMinAngle: 45, highlightScope: { faded: 'global', highlighted: 'item'}}]}
+                  slotProps={{
+                    legend: {
+                      hidden: true
+                    }
+                  }}
+                  sx={{
+                    [`& .${pieArcLabelClasses.root}`]: {
+                      fill: 'white',
+                      fontWeight: 'bold',
+                    },
+                  }}
+                                  />
+            </Grid>
+          </Grid>
+      </Item>)
+      pokeiconPanels = [pokeOverview, pokeLearnset, pokeMoveUsage, pokeItemUsage, pokeCounters, pokeTeammates]
       pokeiconTabs = <Grid container style={{paddingLeft:"5%", display:"grid", gridAutoColumns:"3%", gridAutoFlow:"column", gridGap:"4%"}}>
         {tabList.map(tab => 
         <Grid item style={{width:"200%"}}><TabItem className='tab-style' onClick={this.setTab.bind(this, tab.tabID)}>
@@ -1094,11 +1231,11 @@ class MainComp extends React.Component {
     }
     var modalHS = helpStyle
     return (
-      <div className="App" style={{display:"grid"}}>
+      <div className="App" style={{display:"grid", overflowX: "hidden"}}>
         <Item className='modal-content' style={{fontSize: "0.4vw", display: modalHS, position: "fixed", zIndex: 20, justifySelf: "center", height: "90%", width: "90%", alignSelf:"start", margin:"auto", marginTop:"1%"}}>
         <Item style={{width:"5%", justifySelf: "right"}} className='button-style' fontFamily="bwFont" onClick={this.setHelpStyle.bind(this, "none")}>Close</Item>
-            <h1 style={{color:"#2e2e2e"}}>
-                <div style={{fontSize: "2vw", fontFamily: "bwFont"}}>Welcome to CheeseMans' PokéSearch Engine!</div><br/><br/>
+            <Text style={{color:"#2e2e2e"}}>
+                <div style={{fontSize: "2vw", fontFamily: "bwFont", justifySelf:"center", justifyContent:"center",textAlign:"center"}}>Welcome to CheeseMans' PokéSearch Engine!</div><br/><br/>
                 {`This website was designed to be used as a tool to sort Pokemon by their various attributes.`}<br/>
                 {`You can also take a look at each one by clicking on their icon, and the menu can be closed by pressing the "Close" button or by clicking on the same Pokemon icon.`}<br/>
                 {`Using the search bar, the list of Pokemon can be filtered. Each filter should be seperated by a singular comma (","). (i.e: "atk > 70, hp < 60, gen = 5")`}<br/>
@@ -1107,7 +1244,7 @@ class MainComp extends React.Component {
                 <div style={{overflow:"hidden"}}><ul style={{paddingLeft:"0%", textAlign:"left", columns:3}}>{desc_keys.map(d => 
                   <li style={{display:"inline-block"}}><div style={{fontWeight: "bolder", fontSize:"1.2vw"}}>{titleCase(d) + ":"}<div style={{fontSize:"0.8vw",color:"#4f4f4f"}}>{operator_desc[d]}</div></div><br/></li>
                 )}</ul></div>
-            </h1>
+            </Text>
         </Item>
         <form style={{display:"grid"}} onSubmit={event => {event.preventDefault(); this.autosearch()}}>
         <input id='pokesearchbar' style={{borderRadius: "1.041666667vw", zIndex:12, position: 'fixed', justifySelf: "center", borderWidth:"1px", width:"75%", margin:"auto", display:"block", transform: "translate(0px, 0.5208333333vw)", paddingLeft: "1.041666667vw", fontFamily: "bwFont"}}
@@ -1134,14 +1271,15 @@ class MainComp extends React.Component {
           <Fade in timeout={1500}>
           <Grid item xs={4} sm={2} md={1.5} lg={1} key={poke[3]} className='hover-style'>
             <Item style={ {height:"96px", display:"grid", alignContent:"center", justifyContent:"center"}} className='load-style' onClick={this.activateOverlay.bind(this, poke[3])} onMouseOver={this.setMouseOver.bind(this, poke[3])} onMouseLeave={this.resetMouseOver.bind(this)}>
-            <img src={process.env.PUBLIC_URL + this.internalPokeGIF(poke[3], 0)} style={{alignContent: "center", imageRendering: "pixelated", overflow: "clip",
+            <div style={{overflow:"visible"}}><img src={process.env.PUBLIC_URL + this.internalPokeGIF(poke[3], 0)} style={{alignContent: "center", imageRendering: "pixelated", overflow:"visible",
               objectPosition: ((getOffset(poke[3], 0) - getOffset(poke[3], 2)/2) + "px " + (-getOffset(poke[3], 1) + getOffset(poke[3], 3)/2) + "px")}} 
-              alt="pokemon data"></img>
+              alt="pokemon data"></img></div>
             </Item>
           </Grid>
           </Fade>
           )}
         </Grid>
+        <div style={{textAlign:"center", alignSelf:"center"}}>{noResults}</div>
         </body>
       </div>
     );
@@ -1228,6 +1366,10 @@ function randomQuery()
 
 function analysis(searchQuery)
 {
+    if(searchQuery == 'all')
+    {
+      return data;  
+    }
     if(searchQuery.trimEnd().trimStart().toLowerCase() == "random")
     {
       var query = randomQuery();

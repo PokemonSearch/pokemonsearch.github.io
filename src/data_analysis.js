@@ -146,7 +146,8 @@ function checkImmune(icon, comp, str_value)
 
 function checkForms(icon, comp, str_value)
 {
-    var value = Number(str_value) - 1
+    var value = Number(str_value);
+    
     switch(comp)
     {
         case "=":
@@ -162,7 +163,6 @@ function checkLearnset(icon, comp, str_value)
 {
     if(comp == "=")
     {
-        console.log(icon.data.moves)
         return icon.data.moves.some(x => (x.move.name == str_value.toLowerCase() || x.move.name.replace("-"," ") == str_value.toLowerCase()));
     }
     return false;
@@ -358,21 +358,18 @@ function getOperators()
 function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */dataList, formDict, damageFrom)
 {
     arg = arg.toLowerCase();
-    console.log(dataList)
     var keys = Object.keys(operators).sort(function(a, b){return b.length - a.length;});
     var hasOperator = false;
     var operator = "";
     var comparator = ""
     var value = "";
     var possibleComps = ["=",">","<"]
-    console.log(keys);
     for(var i = 0; i < keys.length; i++)
     {
         var k = keys[i];
         if(arg.includes(k))
         {
             if(operator != "" && operators[k] == operators[operator]){continue;} //skip if it is an equivalent operator
-            console.log(k + " vs. " + operator);
             if(hasOperator){return [];} //check if there are multiple operators
             if(!hasOperator){hasOperator = true};  
             if(arg[arg.indexOf(k)] == arg.length - 1){return [];} //check if operator is at end
@@ -388,13 +385,11 @@ function evaluateArgument(/**@type String */arg, /**@type [PokeIcon] */dataList,
     var finalList = []
     for(var i = 0; i < dataList.length; i++)
     {
-        console.log("AN forms: ",formDict[toString(dataList[i][3])]);
-        if(operators[operator]({data: dataList[i][0], spec_data: dataList[i][1], forms: formDict[toString(dataList[i][3])], id: dataList[i][3], ID: dataList[i][3], dmgfrom: damageFrom}, comparator, value))
+        if(operators[operator]({data: dataList[i][0], spec_data: dataList[i][1], forms: formDict[dataList[i][3].toString()], id: dataList[i][3], ID: dataList[i][3], dmgfrom: damageFrom}, comparator, value))
         {
             finalList.push(dataList[i]);
         }
     }
-    console.log()
     return finalList;
 }
 
