@@ -67,6 +67,12 @@ def write_dex(id, json_text, species_text, isDef, formName = ""):
         f = open(os.path.join(path, "species.json"), "w")
         f.write(remove_non_ascii_1(species_text))
         f.close()
+        spec_data = json.loads(species_text)
+        print("EVO CHAIN:",spec_data["evolution_chain"]["url"])
+        evo_text = requests.get(spec_data["evolution_chain"]["url"]).text
+        evo_f = open(os.path.join(path, "evo.json"), "w")
+        evo_f.write(remove_non_ascii_1(evo_text))
+        evo_f.close()
 
 def remove_non_ascii_1(text):
     return ''.join(i for i in text if ord(i)<128)

@@ -6,7 +6,7 @@ import time
 from PIL import Image
 
 pk_min = 1 #default is 1 (not 0)
-pk_count = 649#1025
+pk_count = 1025
 print(os.getcwd())
 def construct_sprites(pkmn, id):
     parent = os.getcwd()
