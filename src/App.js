@@ -285,6 +285,16 @@ var randomOperatorSheet =
     "immune":[["="],["normal","fighting","ghost","psychic","poison","ground","electric"]]
 }
 
+const linkDict = 
+{
+  "470":"pawmox",
+  "706":"pawmox",
+  "468":"pawmox",
+  "923":"pawmox",
+  "151":"MAGICPONIEZ",
+  "700":"MAGICPONIEZ",
+  "300":"MAGICPONIEZ"
+}
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 var currentQuery = ""
@@ -1289,6 +1299,7 @@ class MainComp extends React.Component {
               objectPosition: ((getOffset(poke[3], 0) - getOffset(poke[3], 2)/2) + "px " + (-getOffset(poke[3], 1) + getOffset(poke[3], 3)/2) + "px")}} 
               alt="pokemon data"></img></div>
             </Item>
+            {<div style={{translate:"35% -225%",position:"absolute"}}>{linkParse(poke[3])}</div>}
           </Grid>
           </Fade>
           )}
@@ -1527,7 +1538,19 @@ render() {
 var data = []
 
 
-
+function linkParse(ID)
+{
+  if(Object.keys(linkDict).includes(ID.toString()))
+  {
+    return (<div style={{alignContent:"center", alignSelf:"center", display:"flex-grid", textAlign:"center"}}>
+      <br style={{display:"block", margin:"0em"}}/>
+      <a target="_blank" rel="noopener noreferrer" href={'http://twitter.com/'+linkDict[ID]}>
+        <img style={{imageRendering:"pixelated"}} src="sinnohchampribbon.png"></img>
+      </a>
+      </div>)
+  }
+  return (<></>)
+}
 
 function App()
 {
