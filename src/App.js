@@ -287,13 +287,7 @@ var randomOperatorSheet =
 
 const linkDict = 
 {
-  "470":"pawmox",
-  "706":"pawmox",
-  "468":"pawmox",
-  "923":"pawmox",
-  "151":"MAGICPONIEZ",
-  "700":"MAGICPONIEZ",
-  "300":"MAGICPONIEZ"
+
 }
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
